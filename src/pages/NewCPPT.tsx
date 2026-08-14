@@ -17,7 +17,12 @@ export default function NewCPPT() {
   const { session } = useAuth();
   const { toast } = useToast();
 
-  const [tanggal, setTanggal] = useState(new Date().toISOString().split('T')[0]);
+  const getLocalDate = () => {
+    const d = new Date();
+    return new Date(d.getTime() - (d.getTimezoneOffset() * 60000)).toISOString().split('T')[0];
+  };
+
+  const [tanggal, setTanggal] = useState(getLocalDate());
   const [subjective, setSubjective] = useState('');
   const [objective, setObjective] = useState('');
   const [assessment, setAssessment] = useState('');
@@ -75,9 +80,9 @@ Objective: ${objective}
         title: "AI Generation Berhasil",
         description: "Assessment dan Plan telah dibuat.",
       });
-    } catch (error: any) {
+    } catch (error) {
       console.error(error);
-      setErrorMsg(error.message || 'Gagal generate dengan AI.');
+      setErrorMsg(error instanceof Error ? error.message : 'Gagal generate dengan AI.');
     } finally {
       setLoadingAI(false);
     }
@@ -108,9 +113,9 @@ Objective: ${objective}
         description: "Data CPPT berhasil disimpan.",
       });
       navigate(`/patients/${patient_id}`);
-    } catch (error: any) {
+    } catch (error) {
       console.error(error);
-      setErrorMsg(error.message || 'Gagal menyimpan CPPT.');
+      setErrorMsg(error instanceof Error ? error.message : 'Gagal menyimpan CPPT.');
     } finally {
       setSaving(false);
     }
@@ -132,7 +137,7 @@ Objective: ${objective}
         </Alert>
       )}
 
-      <div className="space-y-4 bg-white p-6 rounded-lg border shadow-sm">
+      <div className="space-y-4 bg-card text-card-foreground p-6 rounded-lg border shadow-sm">
         <div className="space-y-2">
           <Label htmlFor="tanggal">Tanggal</Label>
           <Input 

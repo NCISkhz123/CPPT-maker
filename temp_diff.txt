@@ -1,0 +1,1689 @@
+﻿diff --git a/diff.txt b/diff.txt
+new file mode 100644
+index 0000000..ece8088
+Binary files /dev/null and b/diff.txt differ
+diff --git a/diff_utf8.txt b/diff_utf8.txt
+new file mode 100644
+index 0000000..7873285
+--- /dev/null
++++ b/diff_utf8.txt
+@@ -0,0 +1,806 @@
++∩╗┐diff --git a/package-lock.json b/package-lock.json
++index 9c766b2..bf0d000 100644
++--- a/package-lock.json
+++++ b/package-lock.json
++@@ -11,6 +11,7 @@
++         "@google/generative-ai": "^0.24.1",
++         "@radix-ui/react-label": "^2.1.15",
++         "@radix-ui/react-slot": "^1.3.3",
+++        "@radix-ui/react-toast": "^1.2.23",
++         "@supabase/supabase-js": "^2.112.3",
++         "class-variance-authority": "^0.7.1",
++         "clsx": "^2.1.1",
++@@ -465,6 +466,38 @@
++         "node": "^20.19.0 || >=22.12.0"
++       }
++     },
+++    "node_modules/@radix-ui/primitive": {
+++      "version": "1.1.7",
+++      "resolved": "https://registry.npmjs.org/@radix-ui/primitive/-/primitive-1.1.7.tgz",
+++      "integrity": "sha512-rqWnm76nYT8HoNNqEjpgJ7Pw/DrBj5iBTrmEPo6HTX5+VJyBNOqTdv4g89G63HuR5g0AaENoAcH7Is5fF2kZ8Q==",
+++      "license": "MIT"
+++    },
+++    "node_modules/@radix-ui/react-collection": {
+++      "version": "1.1.15",
+++      "resolved": "https://registry.npmjs.org/@radix-ui/react-collection/-/react-collection-1.1.15.tgz",
+++      "integrity": "sha512-9W+B9NPF0NaaPh/1NJd3+KqsnlLqU9H7T2rvww+fp+T/evVXdNAyYcnfRQZFOjkR1ajQp3yORlqnI8soawLvNA==",
+++      "license": "MIT",
+++      "dependencies": {
+++        "@radix-ui/react-compose-refs": "1.1.5",
+++        "@radix-ui/react-context": "1.2.2",
+++        "@radix-ui/react-primitive": "2.1.10",
+++        "@radix-ui/react-slot": "1.3.3"
+++      },
+++      "peerDependencies": {
+++        "@types/react": "*",
+++        "@types/react-dom": "*",
+++        "react": "^16.8 || ^17.0 || ^18.0 || ^19.0 || ^19.0.0-rc",
+++        "react-dom": "^16.8 || ^17.0 || ^18.0 || ^19.0 || ^19.0.0-rc"
+++      },
+++      "peerDependenciesMeta": {
+++        "@types/react": {
+++          "optional": true
+++        },
+++        "@types/react-dom": {
+++          "optional": true
+++        }
+++      }
+++    },
++     "node_modules/@radix-ui/react-compose-refs": {
++       "version": "1.1.5",
++       "resolved": "https://registry.npmjs.org/@radix-ui/react-compose-refs/-/react-compose-refs-1.1.5.tgz",
++@@ -480,6 +513,48 @@
++         }
++       }
++     },
+++    "node_modules/@radix-ui/react-context": {
+++      "version": "1.2.2",
+++      "resolved": "https://registry.npmjs.org/@radix-ui/react-context/-/react-context-1.2.2.tgz",
+++      "integrity": "sha512-RHCUGwKHDr0hDGg4X7ma4JG4/+12qxw8rkh5QKdDldlCvtja6nUx1Ef/8HVrJze81lEsgLQlqjzjGNHantgnQA==",
+++      "license": "MIT",
+++      "peerDependencies": {
+++        "@types/react": "*",
+++        "react": "^16.8 || ^17.0 || ^18.0 || ^19.0 || ^19.0.0-rc"
+++      },
+++      "peerDependenciesMeta": {
+++        "@types/react": {
+++          "optional": true
+++        }
+++      }
+++    },
+++    "node_modules/@radix-ui/react-dismissable-layer": {
+++      "version": "1.1.19",
+++      "resolved": "https://registry.npmjs.org/@radix-ui/react-dismissable-layer/-/react-dismissable-layer-1.1.19.tgz",
+++      "integrity": "sha512-8g4pfOL9HoKKLWGiypT+dphVqjFfmcXO5GBnhsG6zI+lxAx/8feQpr+1LSN8Re3hiZ+XkLNS4O9ztK11/LzQ6w==",
+++      "license": "MIT",
+++      "dependencies": {
+++        "@radix-ui/primitive": "1.1.7",
+++        "@radix-ui/react-compose-refs": "1.1.5",
+++        "@radix-ui/react-primitive": "2.1.10",
+++        "@radix-ui/react-use-callback-ref": "1.1.4",
+++        "@radix-ui/react-use-effect-event": "0.0.5"
+++      },
+++      "peerDependencies": {
+++        "@types/react": "*",
+++        "@types/react-dom": "*",
+++        "react": "^16.8 || ^17.0 || ^18.0 || ^19.0 || ^19.0.0-rc",
+++        "react-dom": "^16.8 || ^17.0 || ^18.0 || ^19.0 || ^19.0.0-rc"
+++      },
+++      "peerDependenciesMeta": {
+++        "@types/react": {
+++          "optional": true
+++        },
+++        "@types/react-dom": {
+++          "optional": true
+++        }
+++      }
+++    },
++     "node_modules/@radix-ui/react-label": {
++       "version": "2.1.15",
++       "resolved": "https://registry.npmjs.org/@radix-ui/react-label/-/react-label-2.1.15.tgz",
++@@ -503,6 +578,53 @@
++         }
++       }
++     },
+++    "node_modules/@radix-ui/react-portal": {
+++      "version": "1.1.17",
+++      "resolved": "https://registry.npmjs.org/@radix-ui/react-portal/-/react-portal-1.1.17.tgz",
+++      "integrity": "sha512-vKQLcWypUnwZVvfV7UkGahH2g6ySe8M8R+zYBwPrv5byZ9QAW6cQVvNKo7GgmD+p8aYb6D9JBuvy8/WhOno2wQ==",
+++      "license": "MIT",
+++      "dependencies": {
+++        "@radix-ui/react-primitive": "2.1.10",
+++        "@radix-ui/react-use-layout-effect": "1.1.4"
+++      },
+++      "peerDependencies": {
+++        "@types/react": "*",
+++        "@types/react-dom": "*",
+++        "react": "^16.8 || ^17.0 || ^18.0 || ^19.0 || ^19.0.0-rc",
+++        "react-dom": "^16.8 || ^17.0 || ^18.0 || ^19.0 || ^19.0.0-rc"
+++      },
+++      "peerDependenciesMeta": {
+++        "@types/react": {
+++          "optional": true
+++        },
+++        "@types/react-dom": {
+++          "optional": true
+++        }
+++      }
+++    },
+++    "node_modules/@radix-ui/react-presence": {
+++      "version": "1.1.10",
+++      "resolved": "https://registry.npmjs.org/@radix-ui/react-presence/-/react-presence-1.1.10.tgz",
+++      "integrity": "sha512-3wyzCQ6+ubRA+D4uv9m95JYLXxmOHp05qjrkjeA7uKHHtjpPggQzc6DAb0URl7j67oR0K2foO4ip27TiX037Bw==",
+++      "license": "MIT",
+++      "dependencies": {
+++        "@radix-ui/react-use-layout-effect": "1.1.4"
+++      },
+++      "peerDependencies": {
+++        "@types/react": "*",
+++        "@types/react-dom": "*",
+++        "react": "^16.8 || ^17.0 || ^18.0 || ^19.0 || ^19.0.0-rc",
+++        "react-dom": "^16.8 || ^17.0 || ^18.0 || ^19.0 || ^19.0.0-rc"
+++      },
+++      "peerDependenciesMeta": {
+++        "@types/react": {
+++          "optional": true
+++        },
+++        "@types/react-dom": {
+++          "optional": true
+++        }
+++      }
+++    },
++     "node_modules/@radix-ui/react-primitive": {
++       "version": "2.1.10",
++       "resolved": "https://registry.npmjs.org/@radix-ui/react-primitive/-/react-primitive-2.1.10.tgz",
++@@ -544,6 +666,131 @@
++         }
++       }
++     },
+++    "node_modules/@radix-ui/react-toast": {
+++      "version": "1.2.23",
+++      "resolved": "https://registry.npmjs.org/@radix-ui/react-toast/-/react-toast-1.2.23.tgz",
+++      "integrity": "sha512-ofhyAsYaocRGOs/n0XWdUOSVzEAG6BfrMVM8z0c0kLEWY38w/0WuMFPTJP/HVaZPYkMvHZoKIIhNcjbTCBILPg==",
+++      "license": "MIT",
+++      "dependencies": {
+++        "@radix-ui/primitive": "1.1.7",
+++        "@radix-ui/react-collection": "1.1.15",
+++        "@radix-ui/react-compose-refs": "1.1.5",
+++        "@radix-ui/react-context": "1.2.2",
+++        "@radix-ui/react-dismissable-layer": "1.1.19",
+++        "@radix-ui/react-portal": "1.1.17",
+++        "@radix-ui/react-presence": "1.1.10",
+++        "@radix-ui/react-primitive": "2.1.10",
+++        "@radix-ui/react-use-callback-ref": "1.1.4",
+++        "@radix-ui/react-use-controllable-state": "1.2.6",
+++        "@radix-ui/react-use-layout-effect": "1.1.4",
+++        "@radix-ui/react-visually-hidden": "1.2.11"
+++      },
+++      "peerDependencies": {
+++        "@types/react": "*",
+++        "@types/react-dom": "*",
+++        "react": "^16.8 || ^17.0 || ^18.0 || ^19.0 || ^19.0.0-rc",
+++        "react-dom": "^16.8 || ^17.0 || ^18.0 || ^19.0 || ^19.0.0-rc"
+++      },
+++      "peerDependenciesMeta": {
+++        "@types/react": {
+++          "optional": true
+++        },
+++        "@types/react-dom": {
+++          "optional": true
+++        }
+++      }
+++    },
+++    "node_modules/@radix-ui/react-use-callback-ref": {
+++      "version": "1.1.4",
+++      "resolved": "https://registry.npmjs.org/@radix-ui/react-use-callback-ref/-/react-use-callback-ref-1.1.4.tgz",
+++      "integrity": "sha512-R6OUY2e2fA6Yn6s+VSx5KBV6Nx8LQEhu+cz7LCej18rQ1HLyg9PSC9jP/ZNx0o6FAIK9c0F1kHylzSxKsdlkrQ==",
+++      "license": "MIT",
+++      "peerDependencies": {
+++        "@types/react": "*",
+++        "react": "^16.8 || ^17.0 || ^18.0 || ^19.0 || ^19.0.0-rc"
+++      },
+++      "peerDependenciesMeta": {
+++        "@types/react": {
+++          "optional": true
+++        }
+++      }
+++    },
+++    "node_modules/@radix-ui/react-use-controllable-state": {
+++      "version": "1.2.6",
+++      "resolved": "https://registry.npmjs.org/@radix-ui/react-use-controllable-state/-/react-use-controllable-state-1.2.6.tgz",
+++      "integrity": "sha512-uEQJGT97ZA/TgP/Hydw47lHu+/vQj6z/0jA+WeTbK1o9Rx45GImjpD0tc3W5ad3D6XTSR6e1yEO0FvGq6WQfVQ==",
+++      "license": "MIT",
+++      "dependencies": {
+++        "@radix-ui/primitive": "1.1.7",
+++        "@radix-ui/react-use-effect-event": "0.0.5",
+++        "@radix-ui/react-use-layout-effect": "1.1.4"
+++      },
+++      "peerDependencies": {
+++        "@types/react": "*",
+++        "react": "^16.8 || ^17.0 || ^18.0 || ^19.0 || ^19.0.0-rc"
+++      },
+++      "peerDependenciesMeta": {
+++        "@types/react": {
+++          "optional": true
+++        }
+++      }
+++    },
+++    "node_modules/@radix-ui/react-use-effect-event": {
+++      "version": "0.0.5",
+++      "resolved": "https://registry.npmjs.org/@radix-ui/react-use-effect-event/-/react-use-effect-event-0.0.5.tgz",
+++      "integrity": "sha512-7cshFL8HGS/7HEiHH+9kL9HBwp2sa9yX18Knwek6KYWmXwM7pegMgta2AXMQKI+rq3JnfSj9x8wYqFMTdG1Jgg==",
+++      "license": "MIT",
+++      "dependencies": {
+++        "@radix-ui/react-use-layout-effect": "1.1.4"
+++      },
+++      "peerDependencies": {
+++        "@types/react": "*",
+++        "react": "^16.8 || ^17.0 || ^18.0 || ^19.0 || ^19.0.0-rc"
+++      },
+++      "peerDependenciesMeta": {
+++        "@types/react": {
+++          "optional": true
+++        }
+++      }
+++    },
+++    "node_modules/@radix-ui/react-use-layout-effect": {
+++      "version": "1.1.4",
+++      "resolved": "https://registry.npmjs.org/@radix-ui/react-use-layout-effect/-/react-use-layout-effect-1.1.4.tgz",
+++      "integrity": "sha512-K20DkRkUwDnxEYMBPcg3Y6voLkEy5p5QQmszZgLngKKiC7dzBR/aEuK3w1qlx2JWDUNH6FluahYdgR3BP+QbYw==",
+++      "license": "MIT",
+++      "peerDependencies": {
+++        "@types/react": "*",
+++        "react": "^16.8 || ^17.0 || ^18.0 || ^19.0 || ^19.0.0-rc"
+++      },
+++      "peerDependenciesMeta": {
+++        "@types/react": {
+++          "optional": true
+++        }
+++      }
+++    },
+++    "node_modules/@radix-ui/react-visually-hidden": {
+++      "version": "1.2.11",
+++      "resolved": "https://registry.npmjs.org/@radix-ui/react-visually-hidden/-/react-visually-hidden-1.2.11.tgz",
+++      "integrity": "sha512-NFS86RYYZb4/exihaESBGOpMJFz8MGLAfu3mOBSGByVnVPC9JPASfYubxd/8KbkQK0sYAv8lVQDEQukDX/qXvQ==",
+++      "license": "MIT",
+++      "dependencies": {
+++        "@radix-ui/react-primitive": "2.1.10"
+++      },
+++      "peerDependencies": {
+++        "@types/react": "*",
+++        "@types/react-dom": "*",
+++        "react": "^16.8 || ^17.0 || ^18.0 || ^19.0 || ^19.0.0-rc",
+++        "react-dom": "^16.8 || ^17.0 || ^18.0 || ^19.0 || ^19.0.0-rc"
+++      },
+++      "peerDependenciesMeta": {
+++        "@types/react": {
+++          "optional": true
+++        },
+++        "@types/react-dom": {
+++          "optional": true
+++        }
+++      }
+++    },
++     "node_modules/@rolldown/binding-android-arm64": {
++       "version": "1.2.4",
++       "resolved": "https://registry.npmjs.org/@rolldown/binding-android-arm64/-/binding-android-arm64-1.2.4.tgz",
++diff --git a/package.json b/package.json
++index bce41be..6dcd64c 100644
++--- a/package.json
+++++ b/package.json
++@@ -13,6 +13,7 @@
++     "@google/generative-ai": "^0.24.1",
++     "@radix-ui/react-label": "^2.1.15",
++     "@radix-ui/react-slot": "^1.3.3",
+++    "@radix-ui/react-toast": "^1.2.23",
++     "@supabase/supabase-js": "^2.112.3",
++     "class-variance-authority": "^0.7.1",
++     "clsx": "^2.1.1",
++diff --git a/src/App.tsx b/src/App.tsx
++index 4c5cd40..5cc859e 100644
++--- a/src/App.tsx
+++++ b/src/App.tsx
++@@ -3,6 +3,9 @@ import { cn } from "@/lib/utils"
++ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom"
++ import { AuthProvider, useAuth } from "@/contexts/AuthContext"
++ import Login from "@/pages/Login"
+++import Settings from "@/pages/Settings"
+++import { Navigation } from "@/components/Navigation"
+++import { Toaster } from "@/components/ui/toaster"
++ 
++ function Dashboard() {
++   return (
++@@ -34,7 +37,12 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
++   if (loading) return <div className="p-8 text-center">Loading...</div>
++   if (!session) return <Navigate to="/login" replace />
++   
++-  return <>{children}</>
+++  return (
+++    <>
+++      <Navigation />
+++      {children}
+++    </>
+++  )
++ }
++ 
++ function PublicRoute({ children }: { children: React.ReactNode }) {
++@@ -51,6 +59,7 @@ function AppRoutes() {
++     <Routes>
++       <Route path="/login" element={<PublicRoute><Login /></PublicRoute>} />
++       <Route path="/" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+++      <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
++     </Routes>
++   )
++ }
++@@ -60,6 +69,7 @@ function App() {
++     <AuthProvider>
++       <BrowserRouter>
++         <AppRoutes />
+++        <Toaster />
++       </BrowserRouter>
++     </AuthProvider>
++   )
++diff --git a/src/components/Navigation.tsx b/src/components/Navigation.tsx
++new file mode 100644
++index 0000000..7a0e529
++--- /dev/null
+++++ b/src/components/Navigation.tsx
++@@ -0,0 +1,19 @@
+++import { Link } from "react-router-dom"
+++import { supabase } from "@/lib/supabase"
+++import { Button } from "./ui/button"
+++
+++export function Navigation() {
+++  const handleLogout = async () => {
+++    await supabase.auth.signOut()
+++  }
+++
+++  return (
+++    <nav className="flex items-center justify-between p-4 bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800">
+++      <div className="flex gap-4">
+++        <Link to="/" className="text-slate-900 dark:text-slate-100 hover:text-blue-600 font-medium">Dashboard</Link>
+++        <Link to="/settings" className="text-slate-900 dark:text-slate-100 hover:text-blue-600 font-medium">Settings</Link>
+++      </div>
+++      <Button variant="outline" onClick={handleLogout}>Logout</Button>
+++    </nav>
+++  )
+++}
++diff --git a/src/components/ui/toast.tsx b/src/components/ui/toast.tsx
++new file mode 100644
++index 0000000..a822477
++--- /dev/null
+++++ b/src/components/ui/toast.tsx
++@@ -0,0 +1,127 @@
+++import * as React from "react"
+++import * as ToastPrimitives from "@radix-ui/react-toast"
+++import { cva, type VariantProps } from "class-variance-authority"
+++import { X } from "lucide-react"
+++
+++import { cn } from "@/lib/utils"
+++
+++const ToastProvider = ToastPrimitives.Provider
+++
+++const ToastViewport = React.forwardRef<
+++  React.ElementRef<typeof ToastPrimitives.Viewport>,
+++  React.ComponentPropsWithoutRef<typeof ToastPrimitives.Viewport>
+++>(({ className, ...props }, ref) => (
+++  <ToastPrimitives.Viewport
+++    ref={ref}
+++    className={cn(
+++      "fixed top-0 z-[100] flex max-h-screen w-full flex-col-reverse p-4 sm:bottom-0 sm:right-0 sm:top-auto sm:flex-col md:max-w-[420px]",
+++      className
+++    )}
+++    {...props}
+++  />
+++))
+++ToastViewport.displayName = ToastPrimitives.Viewport.displayName
+++
+++const toastVariants = cva(
+++  "group pointer-events-auto relative flex w-full items-center justify-between space-x-4 overflow-hidden rounded-md border p-6 pr-8 shadow-lg transition-all data-[swipe=cancel]:translate-x-0 data-[swipe=end]:translate-x-[var(--radix-toast-swipe-end-x)] data-[swipe=move]:translate-x-[var(--radix-toast-swipe-move-x)] data-[swipe=move]:transition-none data-[state=open]:animate-in data-[state=closed]:animate-out data-[swipe=end]:animate-out data-[state=closed]:fade-out-80 data-[state=closed]:slide-out-to-right-full data-[state=open]:slide-in-from-top-full data-[state=open]:sm:slide-in-from-bottom-full",
+++  {
+++    variants: {
+++      variant: {
+++        default: "border bg-background text-foreground",
+++        destructive:
+++          "destructive group border-destructive bg-destructive text-destructive-foreground",
+++      },
+++    },
+++    defaultVariants: {
+++      variant: "default",
+++    },
+++  }
+++)
+++
+++const Toast = React.forwardRef<
+++  React.ElementRef<typeof ToastPrimitives.Root>,
+++  React.ComponentPropsWithoutRef<typeof ToastPrimitives.Root> &
+++    VariantProps<typeof toastVariants>
+++>(({ className, variant, ...props }, ref) => {
+++  return (
+++    <ToastPrimitives.Root
+++      ref={ref}
+++      className={cn(toastVariants({ variant }), className)}
+++      {...props}
+++    />
+++  )
+++})
+++Toast.displayName = ToastPrimitives.Root.displayName
+++
+++const ToastAction = React.forwardRef<
+++  React.ElementRef<typeof ToastPrimitives.Action>,
+++  React.ComponentPropsWithoutRef<typeof ToastPrimitives.Action>
+++>(({ className, ...props }, ref) => (
+++  <ToastPrimitives.Action
+++    ref={ref}
+++    className={cn(
+++      "inline-flex h-8 shrink-0 items-center justify-center rounded-md border bg-transparent px-3 text-sm font-medium ring-offset-background transition-colors hover:bg-secondary focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 group-[.destructive]:border-muted/40 group-[.destructive]:hover:border-destructive/30 group-[.destructive]:hover:bg-destructive group-[.destructive]:hover:text-destructive-foreground group-[.destructive]:focus:ring-destructive",
+++      className
+++    )}
+++    {...props}
+++  />
+++))
+++ToastAction.displayName = ToastPrimitives.Action.displayName
+++
+++const ToastClose = React.forwardRef<
+++  React.ElementRef<typeof ToastPrimitives.Close>,
+++  React.ComponentPropsWithoutRef<typeof ToastPrimitives.Close>
+++>(({ className, ...props }, ref) => (
+++  <ToastPrimitives.Close
+++    ref={ref}
+++    className={cn(
+++      "absolute right-2 top-2 rounded-md p-1 text-foreground/50 opacity-0 transition-opacity hover:text-foreground focus:opacity-100 focus:outline-none focus:ring-2 group-hover:opacity-100 group-[.destructive]:text-red-300 group-[.destructive]:hover:text-red-50 group-[.destructive]:focus:ring-red-400 group-[.destructive]:focus:ring-offset-red-600",
+++      className
+++    )}
+++    toast-close=""
+++    {...props}
+++  >
+++    <X className="h-4 w-4" />
+++  </ToastPrimitives.Close>
+++))
+++ToastClose.displayName = ToastPrimitives.Close.displayName
+++
+++const ToastTitle = React.forwardRef<
+++  React.ElementRef<typeof ToastPrimitives.Title>,
+++  React.ComponentPropsWithoutRef<typeof ToastPrimitives.Title>
+++>(({ className, ...props }, ref) => (
+++  <ToastPrimitives.Title
+++    ref={ref}
+++    className={cn("text-sm font-semibold", className)}
+++    {...props}
+++  />
+++))
+++ToastTitle.displayName = ToastPrimitives.Title.displayName
+++
+++const ToastDescription = React.forwardRef<
+++  React.ElementRef<typeof ToastPrimitives.Description>,
+++  React.ComponentPropsWithoutRef<typeof ToastPrimitives.Description>
+++>(({ className, ...props }, ref) => (
+++  <ToastPrimitives.Description
+++    ref={ref}
+++    className={cn("text-sm opacity-90", className)}
+++    {...props}
+++  />
+++))
+++ToastDescription.displayName = ToastPrimitives.Description.displayName
+++
+++type ToastProps = React.ComponentPropsWithoutRef<typeof Toast>
+++
+++type ToastActionElement = React.ReactElement<typeof ToastAction>
+++
+++export {
+++  type ToastProps,
+++  type ToastActionElement,
+++  ToastProvider,
+++  ToastViewport,
+++  Toast,
+++  ToastTitle,
+++  ToastDescription,
+++  ToastClose,
+++  ToastAction,
+++}
++diff --git a/src/components/ui/toaster.tsx b/src/components/ui/toaster.tsx
++new file mode 100644
++index 0000000..6c67edf
++--- /dev/null
+++++ b/src/components/ui/toaster.tsx
++@@ -0,0 +1,33 @@
+++import { useToast } from "@/hooks/use-toast"
+++import {
+++  Toast,
+++  ToastClose,
+++  ToastDescription,
+++  ToastProvider,
+++  ToastTitle,
+++  ToastViewport,
+++} from "@/components/ui/toast"
+++
+++export function Toaster() {
+++  const { toasts } = useToast()
+++
+++  return (
+++    <ToastProvider>
+++      {toasts.map(function ({ id, title, description, action, ...props }) {
+++        return (
+++          <Toast key={id} {...props}>
+++            <div className="grid gap-1">
+++              {title && <ToastTitle>{title}</ToastTitle>}
+++              {description && (
+++                <ToastDescription>{description}</ToastDescription>
+++              )}
+++            </div>
+++            {action}
+++            <ToastClose />
+++          </Toast>
+++        )
+++      })}
+++      <ToastViewport />
+++    </ToastProvider>
+++  )
+++}
++diff --git a/src/hooks/use-toast.ts b/src/hooks/use-toast.ts
++new file mode 100644
++index 0000000..02e111d
++--- /dev/null
+++++ b/src/hooks/use-toast.ts
++@@ -0,0 +1,194 @@
+++"use client"
+++
+++// Inspired by react-hot-toast library
+++import * as React from "react"
+++
+++import type {
+++  ToastActionElement,
+++  ToastProps,
+++} from "@/components/ui/toast"
+++
+++const TOAST_LIMIT = 1
+++const TOAST_REMOVE_DELAY = 1000000
+++
+++type ToasterToast = ToastProps & {
+++  id: string
+++  title?: React.ReactNode
+++  description?: React.ReactNode
+++  action?: ToastActionElement
+++}
+++
+++const actionTypes = {
+++  ADD_TOAST: "ADD_TOAST",
+++  UPDATE_TOAST: "UPDATE_TOAST",
+++  DISMISS_TOAST: "DISMISS_TOAST",
+++  REMOVE_TOAST: "REMOVE_TOAST",
+++} as const
+++
+++let count = 0
+++
+++function genId() {
+++  count = (count + 1) % Number.MAX_SAFE_INTEGER
+++  return count.toString()
+++}
+++
+++type ActionType = typeof actionTypes
+++
+++type Action =
+++  | {
+++      type: ActionType["ADD_TOAST"]
+++      toast: ToasterToast
+++    }
+++  | {
+++      type: ActionType["UPDATE_TOAST"]
+++      toast: Partial<ToasterToast>
+++    }
+++  | {
+++      type: ActionType["DISMISS_TOAST"]
+++      toastId?: ToasterToast["id"]
+++    }
+++  | {
+++      type: ActionType["REMOVE_TOAST"]
+++      toastId?: ToasterToast["id"]
+++    }
+++
+++interface State {
+++  toasts: ToasterToast[]
+++}
+++
+++const toastTimeouts = new Map<string, ReturnType<typeof setTimeout>>()
+++
+++const addToRemoveQueue = (toastId: string) => {
+++  if (toastTimeouts.has(toastId)) {
+++    return
+++  }
+++
+++  const timeout = setTimeout(() => {
+++    toastTimeouts.delete(toastId)
+++    dispatch({
+++      type: "REMOVE_TOAST",
+++      toastId: toastId,
+++    })
+++  }, TOAST_REMOVE_DELAY)
+++
+++  toastTimeouts.set(toastId, timeout)
+++}
+++
+++export const reducer = (state: State, action: Action): State => {
+++  switch (action.type) {
+++    case "ADD_TOAST":
+++      return {
+++        ...state,
+++        toasts: [action.toast, ...state.toasts].slice(0, TOAST_LIMIT),
+++      }
+++
+++    case "UPDATE_TOAST":
+++      return {
+++        ...state,
+++        toasts: state.toasts.map((t) =>
+++          t.id === action.toast.id ? { ...t, ...action.toast } : t
+++        ),
+++      }
+++
+++    case "DISMISS_TOAST": {
+++      const { toastId } = action
+++
+++      // ! Side effects ! - This could be extracted into a dismissToast() action,
+++      // but I'll keep it here for simplicity
+++      if (toastId) {
+++        addToRemoveQueue(toastId)
+++      } else {
+++        state.toasts.forEach((toast) => {
+++          addToRemoveQueue(toast.id)
+++        })
+++      }
+++
+++      return {
+++        ...state,
+++        toasts: state.toasts.map((t) =>
+++          t.id === toastId || toastId === undefined
+++            ? {
+++                ...t,
+++                open: false,
+++              }
+++            : t
+++        ),
+++      }
+++    }
+++    case "REMOVE_TOAST":
+++      if (action.toastId === undefined) {
+++        return {
+++          ...state,
+++          toasts: [],
+++        }
+++      }
+++      return {
+++        ...state,
+++        toasts: state.toasts.filter((t) => t.id !== action.toastId),
+++      }
+++  }
+++}
+++
+++const listeners: Array<(state: State) => void> = []
+++
+++let memoryState: State = { toasts: [] }
+++
+++function dispatch(action: Action) {
+++  memoryState = reducer(memoryState, action)
+++  listeners.forEach((listener) => {
+++    listener(memoryState)
+++  })
+++}
+++
+++type Toast = Omit<ToasterToast, "id">
+++
+++function toast({ ...props }: Toast) {
+++  const id = genId()
+++
+++  const update = (props: ToasterToast) =>
+++    dispatch({
+++      type: "UPDATE_TOAST",
+++      toast: { ...props, id },
+++    })
+++  const dismiss = () => dispatch({ type: "DISMISS_TOAST", toastId: id })
+++
+++  dispatch({
+++    type: "ADD_TOAST",
+++    toast: {
+++      ...props,
+++      id,
+++      open: true,
+++      onOpenChange: (open) => {
+++        if (!open) dismiss()
+++      },
+++    },
+++  })
+++
+++  return {
+++    id: id,
+++    dismiss,
+++    update,
+++  }
+++}
+++
+++function useToast() {
+++  const [state, setState] = React.useState<State>(memoryState)
+++
+++  React.useEffect(() => {
+++    listeners.push(setState)
+++    return () => {
+++      const index = listeners.indexOf(setState)
+++      if (index > -1) {
+++        listeners.splice(index, 1)
+++      }
+++    }
+++  }, [state])
+++
+++  return {
+++    ...state,
+++    toast,
+++    dismiss: (toastId?: string) => dispatch({ type: "DISMISS_TOAST", toastId }),
+++  }
+++}
+++
+++export { useToast, toast }
++diff --git a/src/lib/aiConfig.ts b/src/lib/aiConfig.ts
++new file mode 100644
++index 0000000..64c0210
++--- /dev/null
+++++ b/src/lib/aiConfig.ts
++@@ -0,0 +1,2 @@
+++export const setApiKey = (key: string) => localStorage.setItem('ai_api_key', key);
+++export const getApiKey = () => localStorage.getItem('ai_api_key');
++diff --git a/src/pages/Settings.tsx b/src/pages/Settings.tsx
++new file mode 100644
++index 0000000..656f7d2
++--- /dev/null
+++++ b/src/pages/Settings.tsx
++@@ -0,0 +1,53 @@
+++import { useState, useEffect } from "react"
+++import { setApiKey, getApiKey } from "@/lib/aiConfig"
+++import { useToast } from "@/hooks/use-toast"
+++import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card"
+++import { Input } from "@/components/ui/input"
+++import { Button } from "@/components/ui/button"
+++import { Label } from "@/components/ui/label"
+++
+++export default function Settings() {
+++  const [apiKey, setApiKeyValue] = useState("")
+++  const { toast } = useToast()
+++
+++  useEffect(() => {
+++    const existingKey = getApiKey()
+++    if (existingKey) {
+++      setApiKeyValue(existingKey)
+++    }
+++  }, [])
+++
+++  const handleSave = () => {
+++    setApiKey(apiKey)
+++    toast({
+++      title: "Success",
+++      description: "API Key saved successfully.",
+++    })
+++  }
+++
+++  return (
+++    <div className="p-4 flex justify-center mt-10">
+++      <Card className="w-full max-w-md">
+++        <CardHeader>
+++          <CardTitle>Settings</CardTitle>
+++          <CardDescription>Configure your Gemini API key (Bring Your Own Key).</CardDescription>
+++        </CardHeader>
+++        <CardContent className="space-y-4">
+++          <div className="space-y-2">
+++            <Label htmlFor="apiKey">Gemini API Key</Label>
+++            <Input 
+++              id="apiKey" 
+++              type="password" 
+++              placeholder="Enter your Gemini API Key" 
+++              value={apiKey}
+++              onChange={(e) => setApiKeyValue(e.target.value)}
+++            />
+++          </div>
+++        </CardContent>
+++        <CardFooter>
+++          <Button onClick={handleSave}>Save Key</Button>
+++        </CardFooter>
+++      </Card>
+++    </div>
+++  )
+++}
+diff --git a/package-lock.json b/package-lock.json
+index bf0d000..23c58db 100644
+--- a/package-lock.json
++++ b/package-lock.json
+@@ -9,6 +9,7 @@
+       "version": "0.0.0",
+       "dependencies": {
+         "@google/generative-ai": "^0.24.1",
++        "@radix-ui/react-dialog": "^1.1.23",
+         "@radix-ui/react-label": "^2.1.15",
+         "@radix-ui/react-slot": "^1.3.3",
+         "@radix-ui/react-toast": "^1.2.23",
+@@ -528,6 +529,43 @@
+         }
+       }
+     },
++    "node_modules/@radix-ui/react-dialog": {
++      "version": "1.1.23",
++      "resolved": "https://registry.npmjs.org/@radix-ui/react-dialog/-/react-dialog-1.1.23.tgz",
++      "integrity": "sha512-Ksw4WeROkO4rC9k/onilX/Ao2Cr1ku1unMNH+XSCcP4jSXYu7HDsg9n4ojMjVb22XpYjAQ9qfrFlVbru1vXDUA==",
++      "license": "MIT",
++      "dependencies": {
++        "@radix-ui/primitive": "1.1.7",
++        "@radix-ui/react-compose-refs": "1.1.5",
++        "@radix-ui/react-context": "1.2.2",
++        "@radix-ui/react-dismissable-layer": "1.1.19",
++        "@radix-ui/react-focus-guards": "1.1.6",
++        "@radix-ui/react-focus-scope": "1.1.16",
++        "@radix-ui/react-id": "1.1.4",
++        "@radix-ui/react-portal": "1.1.17",
++        "@radix-ui/react-presence": "1.1.10",
++        "@radix-ui/react-primitive": "2.1.10",
++        "@radix-ui/react-slot": "1.3.3",
++        "@radix-ui/react-use-controllable-state": "1.2.6",
++        "@radix-ui/react-use-layout-effect": "1.1.4",
++        "aria-hidden": "^1.2.4",
++        "react-remove-scroll": "^2.7.2"
++      },
++      "peerDependencies": {
++        "@types/react": "*",
++        "@types/react-dom": "*",
++        "react": "^16.8 || ^17.0 || ^18.0 || ^19.0 || ^19.0.0-rc",
++        "react-dom": "^16.8 || ^17.0 || ^18.0 || ^19.0 || ^19.0.0-rc"
++      },
++      "peerDependenciesMeta": {
++        "@types/react": {
++          "optional": true
++        },
++        "@types/react-dom": {
++          "optional": true
++        }
++      }
++    },
+     "node_modules/@radix-ui/react-dismissable-layer": {
+       "version": "1.1.19",
+       "resolved": "https://registry.npmjs.org/@radix-ui/react-dismissable-layer/-/react-dismissable-layer-1.1.19.tgz",
+@@ -555,6 +593,64 @@
+         }
+       }
+     },
++    "node_modules/@radix-ui/react-focus-guards": {
++      "version": "1.1.6",
++      "resolved": "https://registry.npmjs.org/@radix-ui/react-focus-guards/-/react-focus-guards-1.1.6.tgz",
++      "integrity": "sha512-RNOJjfZMTyBM6xYmV3IVGXkPjIhcBAuv48POevAXwrGJhkWZ9p1rFoIS1JFooPuT193AZmRsCPhpoVJxx6OPoQ==",
++      "license": "MIT",
++      "peerDependencies": {
++        "@types/react": "*",
++        "react": "^16.8 || ^17.0 || ^18.0 || ^19.0 || ^19.0.0-rc"
++      },
++      "peerDependenciesMeta": {
++        "@types/react": {
++          "optional": true
++        }
++      }
++    },
++    "node_modules/@radix-ui/react-focus-scope": {
++      "version": "1.1.16",
++      "resolved": "https://registry.npmjs.org/@radix-ui/react-focus-scope/-/react-focus-scope-1.1.16.tgz",
++      "integrity": "sha512-wmRZ2WWLvmt6KHy2rNPOdPUjwq5xOHY02+m+udwJTn0aNIox/rkskAvJTyTLGhPK6KgrUjlJUJpgmx/+wFiFIQ==",
++      "license": "MIT",
++      "dependencies": {
++        "@radix-ui/react-compose-refs": "1.1.5",
++        "@radix-ui/react-primitive": "2.1.10",
++        "@radix-ui/react-use-callback-ref": "1.1.4"
++      },
++      "peerDependencies": {
++        "@types/react": "*",
++        "@types/react-dom": "*",
++        "react": "^16.8 || ^17.0 || ^18.0 || ^19.0 || ^19.0.0-rc",
++        "react-dom": "^16.8 || ^17.0 || ^18.0 || ^19.0 || ^19.0.0-rc"
++      },
++      "peerDependenciesMeta": {
++        "@types/react": {
++          "optional": true
++        },
++        "@types/react-dom": {
++          "optional": true
++        }
++      }
++    },
++    "node_modules/@radix-ui/react-id": {
++      "version": "1.1.4",
++      "resolved": "https://registry.npmjs.org/@radix-ui/react-id/-/react-id-1.1.4.tgz",
++      "integrity": "sha512-TMQp2llA+RYn7JcjnrMnz7wN4pcVttPZnRZo52PLQsoLVKzNlVwUeHmfePgTgRluXFvlD3GD5g5MOVVTJCO0qA==",
++      "license": "MIT",
++      "dependencies": {
++        "@radix-ui/react-use-layout-effect": "1.1.4"
++      },
++      "peerDependencies": {
++        "@types/react": "*",
++        "react": "^16.8 || ^17.0 || ^18.0 || ^19.0 || ^19.0.0-rc"
++      },
++      "peerDependenciesMeta": {
++        "@types/react": {
++          "optional": true
++        }
++      }
++    },
+     "node_modules/@radix-ui/react-label": {
+       "version": "2.1.15",
+       "resolved": "https://registry.npmjs.org/@radix-ui/react-label/-/react-label-2.1.15.tgz",
+@@ -1228,6 +1324,18 @@
+       "dev": true,
+       "license": "MIT"
+     },
++    "node_modules/aria-hidden": {
++      "version": "1.2.6",
++      "resolved": "https://registry.npmjs.org/aria-hidden/-/aria-hidden-1.2.6.tgz",
++      "integrity": "sha512-ik3ZgC9dY/lYVVM++OISsaYDeg1tb0VtP5uL3ouh1koGOaUMDPpbFIei4JkFimWUFPn90sbMNMXQAIVOlnYKJA==",
++      "license": "MIT",
++      "dependencies": {
++        "tslib": "^2.0.0"
++      },
++      "engines": {
++        "node": ">=10"
++      }
++    },
+     "node_modules/autoprefixer": {
+       "version": "10.5.4",
+       "resolved": "https://registry.npmjs.org/autoprefixer/-/autoprefixer-10.5.4.tgz",
+@@ -1482,6 +1590,12 @@
+         "node": ">=8"
+       }
+     },
++    "node_modules/detect-node-es": {
++      "version": "1.1.0",
++      "resolved": "https://registry.npmjs.org/detect-node-es/-/detect-node-es-1.1.0.tgz",
++      "integrity": "sha512-ypdmJU/TbBby2Dxibuv7ZLW3Bs1QEmM7nHjEANfohJLvE0XVujisn1qPJcZxg+qDucsr+bP6fLD1rPS3AhJ7EQ==",
++      "license": "MIT"
++    },
+     "node_modules/didyoumean": {
+       "version": "1.2.2",
+       "resolved": "https://registry.npmjs.org/didyoumean/-/didyoumean-1.2.2.tgz",
+@@ -1633,6 +1747,15 @@
+         "url": "https://github.com/sponsors/ljharb"
+       }
+     },
++    "node_modules/get-nonce": {
++      "version": "1.0.1",
++      "resolved": "https://registry.npmjs.org/get-nonce/-/get-nonce-1.0.1.tgz",
++      "integrity": "sha512-FJhYRoDaiatfEkUK8HKlicmu/3SGFD51q3itKDGoSTysQJBnfOcxU5GxnhE1E6soB76MbT0MBtnKJuXyAx+96Q==",
++      "license": "MIT",
++      "engines": {
++        "node": ">=6"
++      }
++    },
+     "node_modules/glob-parent": {
+       "version": "6.0.2",
+       "resolved": "https://registry.npmjs.org/glob-parent/-/glob-parent-6.0.2.tgz",
+@@ -2436,6 +2559,53 @@
+         "react": "^19.2.8"
+       }
+     },
++    "node_modules/react-remove-scroll": {
++      "version": "2.7.2",
++      "resolved": "https://registry.npmjs.org/react-remove-scroll/-/react-remove-scroll-2.7.2.tgz",
++      "integrity": "sha512-Iqb9NjCCTt6Hf+vOdNIZGdTiH1QSqr27H/Ek9sv/a97gfueI/5h1s3yRi1nngzMUaOOToin5dI1dXKdXiF+u0Q==",
++      "license": "MIT",
++      "dependencies": {
++        "react-remove-scroll-bar": "^2.3.7",
++        "react-style-singleton": "^2.2.3",
++        "tslib": "^2.1.0",
++        "use-callback-ref": "^1.3.3",
++        "use-sidecar": "^1.1.3"
++      },
++      "engines": {
++        "node": ">=10"
++      },
++      "peerDependencies": {
++        "@types/react": "*",
++        "react": "^16.8.0 || ^17.0.0 || ^18.0.0 || ^19.0.0 || ^19.0.0-rc"
++      },
++      "peerDependenciesMeta": {
++        "@types/react": {
++          "optional": true
++        }
++      }
++    },
++    "node_modules/react-remove-scroll-bar": {
++      "version": "2.3.8",
++      "resolved": "https://registry.npmjs.org/react-remove-scroll-bar/-/react-remove-scroll-bar-2.3.8.tgz",
++      "integrity": "sha512-9r+yi9+mgU33AKcj6IbT9oRCO78WriSj6t/cF8DWBZJ9aOGPOTEDvdUDz1FwKim7QXWwmHqtdHnRJfhAxEG46Q==",
++      "license": "MIT",
++      "dependencies": {
++        "react-style-singleton": "^2.2.2",
++        "tslib": "^2.0.0"
++      },
++      "engines": {
++        "node": ">=10"
++      },
++      "peerDependencies": {
++        "@types/react": "*",
++        "react": "^16.8.0 || ^17.0.0 || ^18.0.0 || ^19.0.0"
++      },
++      "peerDependenciesMeta": {
++        "@types/react": {
++          "optional": true
++        }
++      }
++    },
+     "node_modules/react-router": {
+       "version": "7.18.2",
+       "resolved": "https://registry.npmjs.org/react-router/-/react-router-7.18.2.tgz",
+@@ -2474,6 +2644,28 @@
+         "react-dom": ">=18"
+       }
+     },
++    "node_modules/react-style-singleton": {
++      "version": "2.2.3",
++      "resolved": "https://registry.npmjs.org/react-style-singleton/-/react-style-singleton-2.2.3.tgz",
++      "integrity": "sha512-b6jSvxvVnyptAiLjbkWLE/lOnR4lfTtDAl+eUC7RZy+QQWc6wRzIV2CE6xBuMmDxc2qIihtDCZD5NPOFl7fRBQ==",
++      "license": "MIT",
++      "dependencies": {
++        "get-nonce": "^1.0.0",
++        "tslib": "^2.0.0"
++      },
++      "engines": {
++        "node": ">=10"
++      },
++      "peerDependencies": {
++        "@types/react": "*",
++        "react": "^16.8.0 || ^17.0.0 || ^18.0.0 || ^19.0.0 || ^19.0.0-rc"
++      },
++      "peerDependenciesMeta": {
++        "@types/react": {
++          "optional": true
++        }
++      }
++    },
+     "node_modules/read-cache": {
+       "version": "1.0.0",
+       "resolved": "https://registry.npmjs.org/read-cache/-/read-cache-1.0.0.tgz",
+@@ -2824,6 +3016,49 @@
+         "browserslist": ">= 4.21.0"
+       }
+     },
++    "node_modules/use-callback-ref": {
++      "version": "1.3.3",
++      "resolved": "https://registry.npmjs.org/use-callback-ref/-/use-callback-ref-1.3.3.tgz",
++      "integrity": "sha512-jQL3lRnocaFtu3V00JToYz/4QkNWswxijDaCVNZRiRTO3HQDLsdu1ZtmIUvV4yPp+rvWm5j0y0TG/S61cuijTg==",
++      "license": "MIT",
++      "dependencies": {
++        "tslib": "^2.0.0"
++      },
++      "engines": {
++        "node": ">=10"
++      },
++      "peerDependencies": {
++        "@types/react": "*",
++        "react": "^16.8.0 || ^17.0.0 || ^18.0.0 || ^19.0.0 || ^19.0.0-rc"
++      },
++      "peerDependenciesMeta": {
++        "@types/react": {
++          "optional": true
++        }
++      }
++    },
++    "node_modules/use-sidecar": {
++      "version": "1.1.3",
++      "resolved": "https://registry.npmjs.org/use-sidecar/-/use-sidecar-1.1.3.tgz",
++      "integrity": "sha512-Fedw0aZvkhynoPYlA5WXrMCAMm+nSWdZt6lzJQ7Ok8S6Q+VsHmHpRWndVRJ8Be0ZbkfPc5LRYH+5XrzXcEeLRQ==",
++      "license": "MIT",
++      "dependencies": {
++        "detect-node-es": "^1.1.0",
++        "tslib": "^2.0.0"
++      },
++      "engines": {
++        "node": ">=10"
++      },
++      "peerDependencies": {
++        "@types/react": "*",
++        "react": "^16.8.0 || ^17.0.0 || ^18.0.0 || ^19.0.0 || ^19.0.0-rc"
++      },
++      "peerDependenciesMeta": {
++        "@types/react": {
++          "optional": true
++        }
++      }
++    },
+     "node_modules/util-deprecate": {
+       "version": "1.0.2",
+       "resolved": "https://registry.npmjs.org/util-deprecate/-/util-deprecate-1.0.2.tgz",
+diff --git a/package.json b/package.json
+index 6dcd64c..24611df 100644
+--- a/package.json
++++ b/package.json
+@@ -11,6 +11,7 @@
+   },
+   "dependencies": {
+     "@google/generative-ai": "^0.24.1",
++    "@radix-ui/react-dialog": "^1.1.23",
+     "@radix-ui/react-label": "^2.1.15",
+     "@radix-ui/react-slot": "^1.3.3",
+     "@radix-ui/react-toast": "^1.2.23",
+diff --git a/src/App.tsx b/src/App.tsx
+index 5cc859e..e059ae7 100644
+--- a/src/App.tsx
++++ b/src/App.tsx
+@@ -1,5 +1,4 @@
+-import { Sparkles } from "lucide-react"
+-import { cn } from "@/lib/utils"
++
+ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom"
+ import { AuthProvider, useAuth } from "@/contexts/AuthContext"
+ import Login from "@/pages/Login"
+@@ -7,29 +6,8 @@ import Settings from "@/pages/Settings"
+ import { Navigation } from "@/components/Navigation"
+ import { Toaster } from "@/components/ui/toaster"
+ 
+-function Dashboard() {
+-  return (
+-    <main className="min-h-screen flex flex-col items-center justify-center bg-slate-50 text-slate-900 dark:bg-slate-950 dark:text-slate-100 p-4">
+-      <div className={cn("max-w-md w-full p-6 bg-white dark:bg-slate-900 rounded-xl shadow-lg border border-slate-200 dark:border-slate-800 text-center space-y-4")}>
+-        <div className="inline-flex items-center justify-center p-3 bg-blue-100 dark:bg-blue-950 text-blue-600 dark:text-blue-400 rounded-full">
+-          <Sparkles className="w-8 h-8" />
+-        </div>
+-        <h1 className="text-2xl font-bold tracking-tight">CPPT Maker</h1>
+-        <p className="text-sm text-slate-600 dark:text-slate-400">
+-          Apoteker Clinical Pharmacy Problem-Solver & SOAP / PCNE Documentation Assistant.
+-        </p>
+-        <div className="pt-2">
+-          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300">
+-            System Initialized
+-          </span>
+-        </div>
+-        <div className="pt-4 text-sm font-semibold">
+-          Dashboard
+-        </div>
+-      </div>
+-    </main>
+-  )
+-}
++import Dashboard from "@/pages/Dashboard"
++import PatientDetail from "@/pages/PatientDetail"
+ 
+ function ProtectedRoute({ children }: { children: React.ReactNode }) {
+   const { session, loading } = useAuth()
+@@ -59,6 +37,7 @@ function AppRoutes() {
+     <Routes>
+       <Route path="/login" element={<PublicRoute><Login /></PublicRoute>} />
+       <Route path="/" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
++      <Route path="/patients/:id" element={<ProtectedRoute><PatientDetail /></ProtectedRoute>} />
+       <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
+     </Routes>
+   )
+diff --git a/src/components/ui/dialog.tsx b/src/components/ui/dialog.tsx
+new file mode 100644
+index 0000000..c680b9d
+--- /dev/null
++++ b/src/components/ui/dialog.tsx
+@@ -0,0 +1,120 @@
++import * as React from "react"
++import * as DialogPrimitive from "@radix-ui/react-dialog"
++import { X } from "lucide-react"
++
++import { cn } from "@/lib/utils"
++
++const Dialog = DialogPrimitive.Root
++
++const DialogTrigger = DialogPrimitive.Trigger
++
++const DialogPortal = DialogPrimitive.Portal
++
++const DialogClose = DialogPrimitive.Close
++
++const DialogOverlay = React.forwardRef<
++  React.ElementRef<typeof DialogPrimitive.Overlay>,
++  React.ComponentPropsWithoutRef<typeof DialogPrimitive.Overlay>
++>(({ className, ...props }, ref) => (
++  <DialogPrimitive.Overlay
++    ref={ref}
++    className={cn(
++      "fixed inset-0 z-50 bg-black/80 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0",
++      className
++    )}
++    {...props}
++  />
++))
++DialogOverlay.displayName = DialogPrimitive.Overlay.displayName
++
++const DialogContent = React.forwardRef<
++  React.ElementRef<typeof DialogPrimitive.Content>,
++  React.ComponentPropsWithoutRef<typeof DialogPrimitive.Content>
++>(({ className, children, ...props }, ref) => (
++  <DialogPortal>
++    <DialogOverlay />
++    <DialogPrimitive.Content
++      ref={ref}
++      className={cn(
++        "fixed left-[50%] top-[50%] z-50 grid w-full max-w-lg translate-x-[-50%] translate-y-[-50%] gap-4 border bg-background p-6 shadow-lg duration-200 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[state=closed]:slide-out-to-left-1/2 data-[state=closed]:slide-out-to-top-[48%] data-[state=open]:slide-in-from-left-1/2 data-[state=open]:slide-in-from-top-[48%] sm:rounded-lg",
++        className
++      )}
++      {...props}
++    >
++      {children}
++      <DialogPrimitive.Close className="absolute right-4 top-4 rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none data-[state=open]:bg-accent data-[state=open]:text-muted-foreground">
++        <X className="h-4 w-4" />
++        <span className="sr-only">Close</span>
++      </DialogPrimitive.Close>
++    </DialogPrimitive.Content>
++  </DialogPortal>
++))
++DialogContent.displayName = DialogPrimitive.Content.displayName
++
++const DialogHeader = ({
++  className,
++  ...props
++}: React.HTMLAttributes<HTMLDivElement>) => (
++  <div
++    className={cn(
++      "flex flex-col space-y-1.5 text-center sm:text-left",
++      className
++    )}
++    {...props}
++  />
++)
++DialogHeader.displayName = "DialogHeader"
++
++const DialogFooter = ({
++  className,
++  ...props
++}: React.HTMLAttributes<HTMLDivElement>) => (
++  <div
++    className={cn(
++      "flex flex-col-reverse sm:flex-row sm:justify-end sm:space-x-2",
++      className
++    )}
++    {...props}
++  />
++)
++DialogFooter.displayName = "DialogFooter"
++
++const DialogTitle = React.forwardRef<
++  React.ElementRef<typeof DialogPrimitive.Title>,
++  React.ComponentPropsWithoutRef<typeof DialogPrimitive.Title>
++>(({ className, ...props }, ref) => (
++  <DialogPrimitive.Title
++    ref={ref}
++    className={cn(
++      "text-lg font-semibold leading-none tracking-tight",
++      className
++    )}
++    {...props}
++  />
++))
++DialogTitle.displayName = DialogPrimitive.Title.displayName
++
++const DialogDescription = React.forwardRef<
++  React.ElementRef<typeof DialogPrimitive.Description>,
++  React.ComponentPropsWithoutRef<typeof DialogPrimitive.Description>
++>(({ className, ...props }, ref) => (
++  <DialogPrimitive.Description
++    ref={ref}
++    className={cn("text-sm text-muted-foreground", className)}
++    {...props}
++  />
++))
++DialogDescription.displayName = DialogPrimitive.Description.displayName
++
++export {
++  Dialog,
++  DialogPortal,
++  DialogOverlay,
++  DialogClose,
++  DialogTrigger,
++  DialogContent,
++  DialogHeader,
++  DialogFooter,
++  DialogTitle,
++  DialogDescription,
++}
+diff --git a/src/components/ui/table.tsx b/src/components/ui/table.tsx
+new file mode 100644
+index 0000000..7f3502f
+--- /dev/null
++++ b/src/components/ui/table.tsx
+@@ -0,0 +1,117 @@
++import * as React from "react"
++
++import { cn } from "@/lib/utils"
++
++const Table = React.forwardRef<
++  HTMLTableElement,
++  React.HTMLAttributes<HTMLTableElement>
++>(({ className, ...props }, ref) => (
++  <div className="relative w-full overflow-auto">
++    <table
++      ref={ref}
++      className={cn("w-full caption-bottom text-sm", className)}
++      {...props}
++    />
++  </div>
++))
++Table.displayName = "Table"
++
++const TableHeader = React.forwardRef<
++  HTMLTableSectionElement,
++  React.HTMLAttributes<HTMLTableSectionElement>
++>(({ className, ...props }, ref) => (
++  <thead ref={ref} className={cn("[&_tr]:border-b", className)} {...props} />
++))
++TableHeader.displayName = "TableHeader"
++
++const TableBody = React.forwardRef<
++  HTMLTableSectionElement,
++  React.HTMLAttributes<HTMLTableSectionElement>
++>(({ className, ...props }, ref) => (
++  <tbody
++    ref={ref}
++    className={cn("[&_tr:last-child]:border-0", className)}
++    {...props}
++  />
++))
++TableBody.displayName = "TableBody"
++
++const TableFooter = React.forwardRef<
++  HTMLTableSectionElement,
++  React.HTMLAttributes<HTMLTableSectionElement>
++>(({ className, ...props }, ref) => (
++  <tfoot
++    ref={ref}
++    className={cn(
++      "border-t bg-muted/50 font-medium [&>tr]:last:border-b-0",
++      className
++    )}
++    {...props}
++  />
++))
++TableFooter.displayName = "TableFooter"
++
++const TableRow = React.forwardRef<
++  HTMLTableRowElement,
++  React.HTMLAttributes<HTMLTableRowElement>
++>(({ className, ...props }, ref) => (
++  <tr
++    ref={ref}
++    className={cn(
++      "border-b transition-colors hover:bg-muted/50 data-[state=selected]:bg-muted",
++      className
++    )}
++    {...props}
++  />
++))
++TableRow.displayName = "TableRow"
++
++const TableHead = React.forwardRef<
++  HTMLTableCellElement,
++  React.ThHTMLAttributes<HTMLTableCellElement>
++>(({ className, ...props }, ref) => (
++  <th
++    ref={ref}
++    className={cn(
++      "h-12 px-4 text-left align-middle font-medium text-muted-foreground [&:has([role=checkbox])]:pr-0",
++      className
++    )}
++    {...props}
++  />
++))
++TableHead.displayName = "TableHead"
++
++const TableCell = React.forwardRef<
++  HTMLTableCellElement,
++  React.TdHTMLAttributes<HTMLTableCellElement>
++>(({ className, ...props }, ref) => (
++  <td
++    ref={ref}
++    className={cn("p-4 align-middle [&:has([role=checkbox])]:pr-0", className)}
++    {...props}
++  />
++))
++TableCell.displayName = "TableCell"
++
++const TableCaption = React.forwardRef<
++  HTMLTableCaptionElement,
++  React.HTMLAttributes<HTMLTableCaptionElement>
++>(({ className, ...props }, ref) => (
++  <caption
++    ref={ref}
++    className={cn("mt-4 text-sm text-muted-foreground", className)}
++    {...props}
++  />
++))
++TableCaption.displayName = "TableCaption"
++
++export {
++  Table,
++  TableHeader,
++  TableBody,
++  TableFooter,
++  TableHead,
++  TableRow,
++  TableCell,
++  TableCaption,
++}
+diff --git a/src/pages/Dashboard.tsx b/src/pages/Dashboard.tsx
+new file mode 100644
+index 0000000..0dfd0dd
+--- /dev/null
++++ b/src/pages/Dashboard.tsx
+@@ -0,0 +1,132 @@
++import { useState, useEffect } from "react"
++import { supabase } from "@/lib/supabase"
++import { useAuth } from "@/contexts/AuthContext"
++import { Button } from "@/components/ui/button"
++import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
++import { Input } from "@/components/ui/input"
++import { Label } from "@/components/ui/label"
++import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
++import { Link } from "react-router-dom"
++import { Plus } from "lucide-react"
++
++export default function Dashboard() {
++  const { session } = useAuth()
++  const [patients, setPatients] = useState<any[]>([])
++  const [loading, setLoading] = useState(true)
++  const [open, setOpen] = useState(false)
++  
++  const [nama, setNama] = useState("")
++  const [noRm, setNoRm] = useState("")
++  const [isSubmitting, setIsSubmitting] = useState(false)
++
++  const fetchPatients = async () => {
++    setLoading(true)
++    const { data, error } = await supabase
++      .from("patients")
++      .select("*")
++      .order("created_at", { ascending: false })
++      
++    if (!error && data) {
++      setPatients(data)
++    }
++    setLoading(false)
++  }
++
++  useEffect(() => {
++    fetchPatients()
++  }, [])
++
++  const handleAddPatient = async (e: React.FormEvent) => {
++    e.preventDefault()
++    if (!nama || !noRm) return
++    setIsSubmitting(true)
++    
++    const { error } = await supabase
++      .from("patients")
++      .insert({
++        user_id: session?.user.id,
++        nama,
++        no_rm: noRm
++      })
++      
++    setIsSubmitting(false)
++    if (!error) {
++      setOpen(false)
++      setNama("")
++      setNoRm("")
++      fetchPatients()
++    } else {
++      console.error(error)
++    }
++  }
++
++  return (
++    <div className="container mx-auto py-8">
++      <div className="flex justify-between items-center mb-6">
++        <h1 className="text-3xl font-bold">Daftar Pasien</h1>
++        <Dialog open={open} onOpenChange={setOpen}>
++          <DialogTrigger asChild>
++            <Button><Plus className="w-4 h-4 mr-2" /> Tambah Pasien</Button>
++          </DialogTrigger>
++          <DialogContent>
++            <DialogHeader>
++              <DialogTitle>Tambah Pasien Baru</DialogTitle>
++            </DialogHeader>
++            <form onSubmit={handleAddPatient} className="space-y-4">
++              <div className="space-y-2">
++                <Label htmlFor="nama">Nama Pasien</Label>
++                <Input id="nama" value={nama} onChange={(e) => setNama(e.target.value)} required />
++              </div>
++              <div className="space-y-2">
++                <Label htmlFor="no_rm">No Rekam Medis</Label>
++                <Input id="no_rm" value={noRm} onChange={(e) => setNoRm(e.target.value)} required />
++              </div>
++              <Button type="submit" disabled={isSubmitting} className="w-full">
++                {isSubmitting ? "Menyimpan..." : "Simpan"}
++              </Button>
++            </form>
++          </DialogContent>
++        </Dialog>
++      </div>
++
++      <div className="border rounded-lg">
++        <Table>
++          <TableHeader>
++            <TableRow>
++              <TableHead>Nama Pasien</TableHead>
++              <TableHead>No RM</TableHead>
++              <TableHead className="text-right">Aksi</TableHead>
++            </TableRow>
++          </TableHeader>
++          <TableBody>
++            {loading ? (
++              <TableRow>
++                <TableCell colSpan={3} className="text-center py-4">Loading...</TableCell>
++              </TableRow>
++            ) : patients.length === 0 ? (
++              <TableRow>
++                <TableCell colSpan={3} className="text-center py-4">Belum ada pasien</TableCell>
++              </TableRow>
++            ) : (
++              patients.map((patient) => (
++                <TableRow key={patient.id}>
++                  <TableCell className="font-medium">
++                    <Link to={`/patients/${patient.id}`} className="text-blue-600 hover:underline">
++                      {patient.nama}
++                    </Link>
++                  </TableCell>
++                  <TableCell>{patient.no_rm}</TableCell>
++                  <TableCell className="text-right">
++                    <Button variant="outline" size="sm" asChild>
++                      <Link to={`/patients/${patient.id}`}>Detail</Link>
++                    </Button>
++                  </TableCell>
++                </TableRow>
++              ))
++            )}
++          </TableBody>
++        </Table>
++      </div>
++    </div>
++  )
++}
+diff --git a/src/pages/PatientDetail.tsx b/src/pages/PatientDetail.tsx
+new file mode 100644
+index 0000000..e71dfda
+--- /dev/null
++++ b/src/pages/PatientDetail.tsx
+@@ -0,0 +1,115 @@
++import { useState, useEffect } from "react"
++import { useParams, Link } from "react-router-dom"
++import { supabase } from "@/lib/supabase"
++import { Button } from "@/components/ui/button"
++import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
++import { Plus, ArrowLeft } from "lucide-react"
++
++export default function PatientDetail() {
++  const { id } = useParams()
++  const [patient, setPatient] = useState<any>(null)
++  const [records, setRecords] = useState<any[]>([])
++  const [loading, setLoading] = useState(true)
++
++  useEffect(() => {
++    const fetchData = async () => {
++      setLoading(true)
++      
++      const { data: patientData } = await supabase
++        .from("patients")
++        .select("*")
++        .eq("id", id)
++        .single()
++        
++      if (patientData) {
++        setPatient(patientData)
++      }
++
++      const { data: recordsData } = await supabase
++        .from("cppt_records")
++        .select("*")
++        .eq("patient_id", id)
++        .order("tanggal", { ascending: true })
++
++      if (recordsData) {
++        setRecords(recordsData)
++      }
++
++      setLoading(false)
++    }
++
++    if (id) {
++      fetchData()
++    }
++  }, [id])
++
++  if (loading) {
++    return <div className="p-8 text-center">Loading...</div>
++  }
++
++  if (!patient) {
++    return <div className="p-8 text-center text-red-500">Pasien tidak ditemukan.</div>
++  }
++
++  return (
++    <div className="container mx-auto py-8 space-y-6">
++      <div className="flex items-center gap-4">
++        <Button variant="ghost" size="icon" asChild>
++          <Link to="/"><ArrowLeft className="w-5 h-5" /></Link>
++        </Button>
++        <h1 className="text-3xl font-bold">Detail Pasien</h1>
++      </div>
++
++      <Card>
++        <CardHeader>
++          <CardTitle>Profil Pasien</CardTitle>
++        </CardHeader>
++        <CardContent className="space-y-2">
++          <p><strong>Nama:</strong> {patient.nama}</p>
++          <p><strong>No RM:</strong> {patient.no_rm}</p>
++        </CardContent>
++      </Card>
++
++      <div className="flex justify-between items-center">
++        <h2 className="text-2xl font-bold">Riwayat CPPT</h2>
++        <Button asChild>
++          <Link to={`/patients/${id}/new-cppt`}>
++            <Plus className="w-4 h-4 mr-2" /> Buat CPPT Baru
++          </Link>
++        </Button>
++      </div>
++
++      <div className="space-y-4">
++        {records.length === 0 ? (
++          <p className="text-muted-foreground italic">Belum ada riwayat CPPT untuk pasien ini.</p>
++        ) : (
++          records.map((record) => (
++            <Card key={record.id}>
++              <CardHeader>
++                <CardTitle className="text-lg">Tanggal: {new Date(record.tanggal).toLocaleDateString()}</CardTitle>
++              </CardHeader>
++              <CardContent className="space-y-4">
++                <div>
++                  <h4 className="font-semibold text-sm">S (Subjektif)</h4>
++                  <p className="text-sm whitespace-pre-wrap bg-slate-50 dark:bg-slate-900 p-3 rounded-md">{record.subjective}</p>
++                </div>
++                <div>
++                  <h4 className="font-semibold text-sm">O (Objektif)</h4>
++                  <p className="text-sm whitespace-pre-wrap bg-slate-50 dark:bg-slate-900 p-3 rounded-md">{record.objective}</p>
++                </div>
++                <div>
++                  <h4 className="font-semibold text-sm">A (Assessment)</h4>
++                  <p className="text-sm whitespace-pre-wrap bg-slate-50 dark:bg-slate-900 p-3 rounded-md">{record.assessment}</p>
++                </div>
++                <div>
++                  <h4 className="font-semibold text-sm">P (Plan)</h4>
++                  <p className="text-sm whitespace-pre-wrap bg-slate-50 dark:bg-slate-900 p-3 rounded-md">{record.plan}</p>
++                </div>
++              </CardContent>
++            </Card>
++          ))
++        )}
++      </div>
++    </div>
++  )
++}

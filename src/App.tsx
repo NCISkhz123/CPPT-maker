@@ -8,6 +8,7 @@ import { Toaster } from "@/components/ui/toaster"
 
 import Dashboard from "@/pages/Dashboard"
 import PatientDetail from "@/pages/PatientDetail"
+import NewCPPT from "@/pages/NewCPPT"
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { session, loading } = useAuth()
@@ -38,6 +39,7 @@ function AppRoutes() {
       <Route path="/login" element={<PublicRoute><Login /></PublicRoute>} />
       <Route path="/" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
       <Route path="/patients/:id" element={<ProtectedRoute><PatientDetail /></ProtectedRoute>} />
+      <Route path="/patients/:id/new-cppt" element={<ProtectedRoute><NewCPPT /></ProtectedRoute>} />
       <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
     </Routes>
   )

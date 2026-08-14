@@ -1,7 +1,10 @@
 import { Sparkles } from "lucide-react"
 import { cn } from "@/lib/utils"
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom"
+import { AuthProvider, useAuth } from "@/contexts/AuthContext"
+import Login from "@/pages/Login"
 
-function App() {
+function Dashboard() {
   return (
     <main className="min-h-screen flex flex-col items-center justify-center bg-slate-50 text-slate-900 dark:bg-slate-950 dark:text-slate-100 p-4">
       <div className={cn("max-w-md w-full p-6 bg-white dark:bg-slate-900 rounded-xl shadow-lg border border-slate-200 dark:border-slate-800 text-center space-y-4")}>
@@ -17,8 +20,48 @@ function App() {
             System Initialized
           </span>
         </div>
+        <div className="pt-4 text-sm font-semibold">
+          Dashboard
+        </div>
       </div>
     </main>
+  )
+}
+
+function ProtectedRoute({ children }: { children: React.ReactNode }) {
+  const { session, loading } = useAuth()
+  
+  if (loading) return <div className="p-8 text-center">Loading...</div>
+  if (!session) return <Navigate to="/login" replace />
+  
+  return <>{children}</>
+}
+
+function PublicRoute({ children }: { children: React.ReactNode }) {
+  const { session, loading } = useAuth()
+  
+  if (loading) return <div className="p-8 text-center">Loading...</div>
+  if (session) return <Navigate to="/" replace />
+  
+  return <>{children}</>
+}
+
+function AppRoutes() {
+  return (
+    <Routes>
+      <Route path="/login" element={<PublicRoute><Login /></PublicRoute>} />
+      <Route path="/" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+    </Routes>
+  )
+}
+
+function App() {
+  return (
+    <AuthProvider>
+      <BrowserRouter>
+        <AppRoutes />
+      </BrowserRouter>
+    </AuthProvider>
   )
 }
 

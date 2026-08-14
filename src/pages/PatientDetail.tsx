@@ -4,34 +4,59 @@ import { supabase } from "@/lib/supabase"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Plus, ArrowLeft } from "lucide-react"
+import { useToast } from "@/hooks/use-toast"
+import type { Patient } from "./Dashboard"
+
+export interface CpptRecord {
+  id: string
+  patient_id: string
+  tanggal: string
+  subjective: string
+  objective: string
+  assessment: string
+  plan: string
+}
 
 export default function PatientDetail() {
   const { id } = useParams()
-  const [patient, setPatient] = useState<any>(null)
-  const [records, setRecords] = useState<any[]>([])
+  const { toast } = useToast()
+  const [patient, setPatient] = useState<Patient | null>(null)
+  const [records, setRecords] = useState<CpptRecord[]>([])
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true)
       
-      const { data: patientData } = await supabase
+      const { data: patientData, error: patientError } = await supabase
         .from("patients")
         .select("*")
         .eq("id", id)
         .single()
         
-      if (patientData) {
+      if (patientError) {
+        toast({
+          title: "Error",
+          description: "Gagal mengambil data pasien.",
+          variant: "destructive"
+        })
+      } else if (patientData) {
         setPatient(patientData)
       }
 
-      const { data: recordsData } = await supabase
+      const { data: recordsData, error: recordsError } = await supabase
         .from("cppt_records")
         .select("*")
         .eq("patient_id", id)
         .order("tanggal", { ascending: true })
 
-      if (recordsData) {
+      if (recordsError) {
+        toast({
+          title: "Error",
+          description: "Gagal mengambil riwayat CPPT.",
+          variant: "destructive"
+        })
+      } else if (recordsData) {
         setRecords(recordsData)
       }
 

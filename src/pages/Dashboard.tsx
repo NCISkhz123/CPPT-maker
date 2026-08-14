@@ -8,10 +8,20 @@ import { Label } from "@/components/ui/label"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Link } from "react-router-dom"
 import { Plus } from "lucide-react"
+import { useToast } from "@/hooks/use-toast"
+
+export interface Patient {
+  id: string
+  user_id: string
+  nama: string
+  no_rm: string
+  created_at?: string
+}
 
 export default function Dashboard() {
   const { session } = useAuth()
-  const [patients, setPatients] = useState<any[]>([])
+  const { toast } = useToast()
+  const [patients, setPatients] = useState<Patient[]>([])
   const [loading, setLoading] = useState(true)
   const [open, setOpen] = useState(false)
   
@@ -57,6 +67,11 @@ export default function Dashboard() {
       fetchPatients()
     } else {
       console.error(error)
+      toast({
+        title: "Gagal",
+        description: "Terjadi kesalahan saat menambahkan pasien.",
+        variant: "destructive"
+      })
     }
   }
 

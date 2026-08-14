@@ -3,6 +3,9 @@ import { cn } from "@/lib/utils"
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom"
 import { AuthProvider, useAuth } from "@/contexts/AuthContext"
 import Login from "@/pages/Login"
+import Settings from "@/pages/Settings"
+import { Navigation } from "@/components/Navigation"
+import { Toaster } from "@/components/ui/toaster"
 
 function Dashboard() {
   return (
@@ -34,7 +37,12 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
   if (loading) return <div className="p-8 text-center">Loading...</div>
   if (!session) return <Navigate to="/login" replace />
   
-  return <>{children}</>
+  return (
+    <>
+      <Navigation />
+      {children}
+    </>
+  )
 }
 
 function PublicRoute({ children }: { children: React.ReactNode }) {
@@ -51,6 +59,7 @@ function AppRoutes() {
     <Routes>
       <Route path="/login" element={<PublicRoute><Login /></PublicRoute>} />
       <Route path="/" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+      <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
     </Routes>
   )
 }
@@ -60,6 +69,7 @@ function App() {
     <AuthProvider>
       <BrowserRouter>
         <AppRoutes />
+        <Toaster />
       </BrowserRouter>
     </AuthProvider>
   )

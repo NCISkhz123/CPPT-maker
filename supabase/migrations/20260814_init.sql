@@ -36,3 +36,6 @@ CREATE POLICY "Users can only see their own cppt_records"
 
 CREATE POLICY "Users can only insert their own cppt_records" 
   ON cppt_records FOR INSERT WITH CHECK (auth.uid() = user_id);
+
+GRANT ALL ON TABLE public.patients TO authenticated, anon, service_role;
+GRANT ALL ON TABLE public.cppt_records TO authenticated, anon, service_role;

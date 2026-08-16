@@ -15,6 +15,7 @@ export interface CpptRecord {
   objective: string
   assessment: string
   plan: string
+  references?: { title: string; url: string }[] | null
 }
 
 export default function PatientDetail() {
@@ -130,6 +131,26 @@ export default function PatientDetail() {
                   <h4 className="font-semibold text-sm">P (Plan)</h4>
                   <p className="text-sm whitespace-pre-wrap bg-slate-50 dark:bg-slate-900 p-3 rounded-md">{record.plan}</p>
                 </div>
+                {record.references && record.references.length > 0 && (
+                  <div className="mt-4 pt-4 border-t">
+                    <h4 className="font-semibold text-sm mb-2 text-primary">Referensi Ilmiah (Literatur & Panduan)</h4>
+                    <ul className="space-y-2">
+                      {record.references.map((ref, idx) => (
+                        <li key={idx}>
+                          <a 
+                            href={ref.url} 
+                            target="_blank" 
+                            rel="noopener noreferrer"
+                            className="text-sm text-blue-600 hover:underline flex items-start gap-2"
+                          >
+                            <span className="text-xs bg-blue-100 text-blue-800 px-1.5 py-0.5 rounded shrink-0 mt-0.5">Link</span>
+                            {ref.title}
+                          </a>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
               </CardContent>
             </Card>
           ))

@@ -1,0 +1,1258 @@
+﻿diff --git a/recover-user.js b/recover-user.js
+new file mode 100644
+index 0000000..bb6369a
+--- /dev/null
++++ b/recover-user.js
+@@ -0,0 +1,22 @@
++import { createClient } from '@supabase/supabase-js';
++
++const supabaseUrl = 'http://127.0.0.1:54331';
++const serviceRoleKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImV4cCI6MTk4MzgxMjk5Nn0.EGIM96RAZx35lJzdJsyH-qQwv8Hdp7fsn3W0YpN81IU';
++
++const supabase = createClient(supabaseUrl, serviceRoleKey);
++
++async function main() {
++  const { data, error } = await supabase.auth.admin.createUser({
++    email: 'apoteker@cppt.com',
++    password: 'password123',
++    email_confirm: true
++  });
++
++  if (error) {
++    console.error('Error creating user:', error);
++  } else {
++    console.log('User recreated successfully:', data.user.id);
++  }
++}
++
++main();
+diff --git a/src/pages/Dashboard.tsx b/src/pages/Dashboard.tsx
+index 6d32a71..dd0b7c0 100644
+--- a/src/pages/Dashboard.tsx
++++ b/src/pages/Dashboard.tsx
+@@ -7,15 +7,17 @@ import { Input } from "@/components/ui/input"
+ import { Label } from "@/components/ui/label"
+ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
+ import { Link } from "react-router-dom"
+-import { Plus } from "lucide-react"
++import { Plus, LogOut } from "lucide-react"
+ import { useToast } from "@/hooks/use-toast"
+ 
+ export interface Patient {
+   id: string
+-  user_id: string
++  user_id: string // creator
+   nama: string
+   no_rm: string
+   created_at?: string
++  is_active?: boolean
++  admitted_at?: string
+ }
+ 
+ export default function Dashboard() {
+@@ -30,46 +32,159 @@ export default function Dashboard() {
+   const [isSubmitting, setIsSubmitting] = useState(false)
+ 
+   const fetchPatients = async () => {
++    if (!session?.user.id) return
+     setLoading(true)
++    
++    // Fetch patients through the patient_handlers junction table
+     const { data, error } = await supabase
+-      .from("patients")
+-      .select("*")
+-      .order("created_at", { ascending: false })
++      .from('patient_handlers')
++      .select(`
++        patient_id,
++        patients (
++          id,
++          user_id,
++          nama,
++          no_rm,
++          created_at,
++          is_active,
++          admitted_at
++        )
++      `)
++      .eq('user_id', session.user.id)
+       
+     if (!error && data) {
+-      setPatients(data)
++      // Extract the patients from the join and filter only active ones
++      const activePatients = data
++        .map(h => h.patients as unknown as Patient)
++        .filter(p => p && p.is_active !== false)
++        
++      setPatients(activePatients)
++    } else if (error) {
++      console.error("Error fetching patients:", error)
+     }
+     setLoading(false)
+   }
+ 
+   useEffect(() => {
+     fetchPatients()
+-  }, [])
++  }, [session?.user.id])
+ 
+   const handleAddPatient = async (e: React.FormEvent) => {
+     e.preventDefault()
+-    if (!nama || !noRm) return
++    if (!nama || !noRm || !session?.user.id) return
+     setIsSubmitting(true)
+     
+-    const { error } = await supabase
+-      .from("patients")
+-      .insert({
+-        user_id: session?.user.id,
+-        nama,
+-        no_rm: noRm
+-      })
++    try {
++      // 1. Check if patient RM exists
++      const { data: existingPatients, error: searchError } = await supabase
++        .from("patients")
++        .select("*")
++        .eq("no_rm", noRm)
++        .limit(1)
++        
++      if (searchError) throw searchError
++      
++      let patientIdToHandle = ""
++
++      if (existingPatients && existingPatients.length > 0) {
++        // Old Patient
++        const patient = existingPatients[0]
++        patientIdToHandle = patient.id
++        
++        // If inactive, reactivate and update admitted_at
++        if (!patient.is_active) {
++          const { error: updateError } = await supabase
++            .from("patients")
++            .update({ 
++              is_active: true, 
++              admitted_at: new Date().toISOString() 
++            })
++            .eq("id", patient.id)
++            
++          if (updateError) throw updateError
++        }
++      } else {
++        // New Patient
++        const { data: newPatient, error: insertError } = await supabase
++          .from("patients")
++          .insert({
++            user_id: session.user.id,
++            nama: nama,
++            no_rm: noRm,
++            is_active: true,
++            admitted_at: new Date().toISOString()
++          })
++          .select()
++          .single()
++          
++        if (insertError) throw insertError
++        if (newPatient) {
++          patientIdToHandle = newPatient.id
++        }
++      }
++      
++      // 2. Add to patient_handlers (upsert to ignore unique constraint error if already handling)
++      if (patientIdToHandle) {
++        const { error: handlerError } = await supabase
++          .from("patient_handlers")
++          .upsert({
++            patient_id: patientIdToHandle,
++            user_id: session.user.id
++          }, { onConflict: 'patient_id, user_id' })
++          
++        if (handlerError) throw handlerError
++      }
+       
+-    setIsSubmitting(false)
+-    if (!error) {
+       setOpen(false)
+       setNama("")
+       setNoRm("")
+       fetchPatients()
+-    } else {
+-      console.error(error)
++      
++    } catch (err: any) {
++      console.error(err)
++      toast({
++        title: "Gagal",
++        description: err.message || "Terjadi kesalahan saat menambahkan pasien.",
++        variant: "destructive"
++      })
++    } finally {
++      setIsSubmitting(false)
++    }
++  }
++
++  const handleDischarge = async (patientId: string, patientName: string) => {
++    if (!confirm(`Apakah Anda yakin ingin memulangkan pasien ${patientName}? Ini akan menghapusnya dari dashboard semua apoteker.`)) {
++      return
++    }
++    
++    try {
++      // Set patient to inactive
++      const { error: updateError } = await supabase
++        .from("patients")
++        .update({ is_active: false })
++        .eq("id", patientId)
++        
++      if (updateError) throw updateError
++      
++      // Remove all handlers for this patient
++      const { error: handlerError } = await supabase
++        .from("patient_handlers")
++        .delete()
++        .eq("patient_id", patientId)
++        
++      if (handlerError) throw handlerError
++      
++      toast({
++        title: "Pasien Pulang",
++        description: `${patientName} telah berhasil dipulangkan.`,
++      })
++      
++      fetchPatients()
++    } catch (err: any) {
++      console.error(err)
+       toast({
+         title: "Gagal",
+-        description: "Terjadi kesalahan saat menambahkan pasien.",
++        description: "Gagal memulangkan pasien.",
+         variant: "destructive"
+       })
+     }
+@@ -85,19 +200,20 @@ export default function Dashboard() {
+           </DialogTrigger>
+           <DialogContent>
+             <DialogHeader>
+-              <DialogTitle>Tambah Pasien Baru</DialogTitle>
++              <DialogTitle>Tambah Pasien</DialogTitle>
+             </DialogHeader>
+             <form onSubmit={handleAddPatient} className="space-y-4">
+               <div className="space-y-2">
+                 <Label htmlFor="nama">Nama Pasien</Label>
+-                <Input id="nama" value={nama} onChange={(e) => setNama(e.target.value)} required />
++                <Input id="nama" value={nama} onChange={(e) => setNama(e.target.value)} placeholder="Contoh: Tn. Irawan" required />
++                <p className="text-xs text-muted-foreground">Jika RM sudah terdaftar, sistem akan menggunakan nama asli pasien secara otomatis.</p>
+               </div>
+               <div className="space-y-2">
+                 <Label htmlFor="no_rm">No Rekam Medis</Label>
+                 <Input id="no_rm" value={noRm} onChange={(e) => setNoRm(e.target.value)} required />
+               </div>
+               <Button type="submit" disabled={isSubmitting} className="w-full">
+-                {isSubmitting ? "Menyimpan..." : "Simpan"}
++                {isSubmitting ? "Menyimpan..." : "Simpan & Tambahkan ke Dashboard"}
+               </Button>
+             </form>
+           </DialogContent>
+@@ -120,7 +236,7 @@ export default function Dashboard() {
+               </TableRow>
+             ) : patients.length === 0 ? (
+               <TableRow>
+-                <TableCell colSpan={3} className="text-center py-4">Belum ada pasien</TableCell>
++                <TableCell colSpan={3} className="text-center py-4">Belum ada pasien yang sedang Anda tangani.</TableCell>
+               </TableRow>
+             ) : (
+               patients.map((patient) => (
+@@ -131,9 +247,12 @@ export default function Dashboard() {
+                     </Link>
+                   </TableCell>
+                   <TableCell>{patient.no_rm}</TableCell>
+-                  <TableCell className="text-right">
++                  <TableCell className="text-right space-x-2">
+                     <Button variant="outline" size="sm" asChild>
+-                      <Link to={`/patients/${patient.id}`}>Detail</Link>
++                      <Link to={`/patients/${patient.id}`}>Detail CPPT</Link>
++                    </Button>
++                    <Button variant="destructive" size="sm" onClick={() => handleDischarge(patient.id, patient.nama)}>
++                      <LogOut className="w-4 h-4 mr-1" /> Pulang
+                     </Button>
+                   </TableCell>
+                 </TableRow>
+diff --git a/src/pages/NewCPPT.tsx b/src/pages/NewCPPT.tsx
+index a368f2b..188992c 100644
+--- a/src/pages/NewCPPT.tsx
++++ b/src/pages/NewCPPT.tsx
+@@ -1,4 +1,4 @@
+-import { useState } from 'react';
++import { useState, useEffect } from 'react';
+ import { useNavigate, useParams } from 'react-router-dom';
+ import { supabase } from '@/lib/supabase';
+ import { useAuth } from '@/contexts/AuthContext';
+@@ -10,6 +10,7 @@ import { Input } from '@/components/ui/input';
+ import { Label } from '@/components/ui/label';
+ import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+ import { useToast } from '@/hooks/use-toast';
++import { Copy } from 'lucide-react';
+ 
+ export default function NewCPPT() {
+   const { id: patient_id } = useParams<{ id: string }>();
+@@ -22,15 +23,63 @@ export default function NewCPPT() {
+     return new Date(d.getTime() - (d.getTimezoneOffset() * 60000)).toISOString().split('T')[0];
+   };
+ 
++  const handleCopy = (text: string, fieldName: string) => {
++    if (!text) return;
++    navigator.clipboard.writeText(text);
++    toast({
++      title: "Tersalin",
++      description: `${fieldName} berhasil disalin ke clipboard.`,
++    });
++  };
++
+   const [tanggal, setTanggal] = useState(getLocalDate());
+   const [subjective, setSubjective] = useState('');
+   const [objective, setObjective] = useState('');
+   const [assessment, setAssessment] = useState('');
+   const [plan, setPlan] = useState('');
++  const [references, setReferences] = useState<{title: string, url: string}[] | null>(null);
+   
+   const [loadingAI, setLoadingAI] = useState(false);
+   const [saving, setSaving] = useState(false);
+   const [errorMsg, setErrorMsg] = useState('');
++  
++  const [previousRecord, setPreviousRecord] = useState<any>(null);
++
++  useEffect(() => {
++    const fetchPreviousRecord = async () => {
++      if (!patient_id) return;
++      
++      // Fetch patient's admission date
++      const { data: patientData } = await supabase
++        .from('patients')
++        .select('admitted_at')
++        .eq('id', patient_id)
++        .single();
++        
++      let query = supabase
++        .from('cppt_records')
++        .select('*')
++        .eq('patient_id', patient_id);
++        
++      if (patientData?.admitted_at) {
++        query = query.gte('created_at', patientData.admitted_at);
++      }
++      
++      const { data, error } = await query
++        .order('tanggal', { ascending: false })
++        .order('created_at', { ascending: false })
++        .limit(1)
++        .single();
++        
++      if (!error && data) {
++        setPreviousRecord(data);
++      } else {
++        setPreviousRecord(null);
++      }
++    };
++    
++    fetchPreviousRecord();
++  }, [patient_id]);
+ 
+   const generateAI = async () => {
+     setErrorMsg('');
+@@ -48,19 +97,150 @@ export default function NewCPPT() {
+     setLoadingAI(true);
+     try {
+       const genAI = new GoogleGenerativeAI(apiKey);
+-      const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
++      const model = genAI.getGenerativeModel({ 
++        model: "gemini-3.6-flash",
++        tools: [
++          {
++            googleSearch: {}
++          }
++        ],
++        generationConfig: {
++          temperature: 0.0, // Memaksa AI memberikan jawaban yang konsisten dan paling logis
++        }
++      });
++
++      const globalInstruction = `SANGAT PENTING (ATURAN UMUM):
++1. Di dalam pedoman apoteker klinis, data Objective mencakup "Obat yang sedang digunakan / terapi saat ini". Oleh karena itu, jika Anda melihat daftar obat di data Objective, evaluasilah obat tersebut sebagai TERAPI SAAT INI yang diberikan oleh dokter. Jangan otomatis menyimpulkan bahwa terapi tersebut "telah gagal" (misalnya: "TD masih tinggi padahal sudah minum obat X"), melainkan evaluasilah apakah pemilihan obat tersebut (terapi saat ini) sudah TEPAT untuk kondisi pasien saat ini.
++2. JANGAN mencampuradukkan kondisi yang sudah diterapi dengan tepat ke dalam poin masalah (kode C atau P). Jika sebuah penyakit (misal: hipertensi) sudah mendapat obat yang tepat, JANGAN masukkan ke dalam poin "Pengobatan tidak diberikan" hanya untuk sekadar dibahas. Fokuskan poin masalah (kode C/P) HANYA pada kondisi yang bermasalah atau belum mendapat obat (misal: TG tinggi belum ada obatnya). Kondisi yang sudah mendapat terapi tepat bisa dimasukkan ke dalam Plan (I0.1 Tanpa Intervensi) atau tidak perlu dijadikan problem utama.
++3. ETIKA INTERVENSI: Jika Anda merekomendasikan penambahan terapi baru pada bagian Plan, sebutkan NAMA GOLONGAN OBATNYA SAJA (misalnya: "Analgetik" atau "Obat penurun lipid golongan Fibrat"). DILARANG KERAS meresepkan nama obat spesifik beserta dosisnya (misalnya: "Parasetamol 500mg" atau "Simvastatin 20mg") untuk menghormati kewenangan klinis dokter.
++4. GAYA BAHASA (NADA BICARA): Pada bagian Plan, gunakan bahasa yang sangat sopan, kolaboratif, dan bersifat menyarankan. JANGAN menggurui atau mendikte dokter. Gunakan frasa penawaran seperti "Mengusulkan untuk mempertimbangkan...", "Dapat didiskusikan kemungkinan...", atau "Mohon pertimbangkan penambahan..." alih-alih kalimat perintah seperti "Harus diberikan..." atau "Wajib diganti...".
++5. Pada bagian Assessment (Masalah/Penyebab), Anda BOLEH memberikan lebih dari 1 poin PCNE jika memang ditemukan indikasi multipel.
++6. Pada bagian Plan (Intervensi), Anda WAJIB menggunakan format kode poin PCNE Intervensi yang bersesuaian.`;
++
++      const contextInstruction = previousRecord
++        ? `KONTEKS PASIEN (PERAWATAN LANJUTAN / HARI KE-N):
++- Pasien ini sudah memiliki riwayat perawatan sebelumnya.
++- Pada bagian Objective saat ini, obat yang tercantum adalah TERAPI / RESEP HARI INI.
++- Anda harus melihat data Riwayat Obat Sebelumnya sebagai acuan untuk mengevaluasi Resep Hari Ini (apakah ini terapi baru, perubahan dosis, dsb).
++
++Data Riwayat CPPT Sebelumnya (Untuk Konteks):
++S: ${previousRecord.subjective}
++O: ${previousRecord.objective}
++A: ${previousRecord.assessment}
++P: ${previousRecord.plan}`
++        : `KONTEKS PASIEN (PERAWATAN HARI PERTAMA):
++- Ini adalah hari pertama CPPT pasien. Obat-obatan yang dicantumkan pada bagian Objective adalah TERAPI YANG BARU DIRESEPKAN HARI INI OLEH DOKTER.
++- Tugas Anda adalah mengevaluasi ketepatan resep baru tersebut terhadap kondisi pasien (Subjective/Objective) menggunakan PCNE. JANGAN menganggap obat tersebut sebagai riwayat pengobatan yang sudah gagal.`;
+ 
+-      const prompt = `Anda adalah asisten apoteker. Diberikan data Subjective dan Objective pasien, buatlah Assessment dan Plan menggunakan metode PCNE.
+-SANGAT PENTING: Format output harus sesuai contoh berikut:
+-P2.1 - Kejadian obat yang merugikan mungkin terjadi
+-Pasien mengalami efek samping merugikan berupa mual dan pusing yang dicurigai akibat akumulasi Levofloxacin.
++      const prompt = `Anda adalah asisten apoteker klinis. Diberikan data Subjective dan Objective pasien, buatlah Assessment dan Plan menggunakan klasifikasi metode PCNE (Pharmaceutical Care Network Europe).
+ 
+-Kembalikan respon hanya dalam bentuk JSON murni tanpa markdown blocks, dengan struktur:
++${globalInstruction}
++
++${contextInstruction}
++
++ATURAN FORMAT PENULISAN (WAJIB DIIKUTI):
++1. SANGAT DISARANKAN untuk menggabungkan kode PCNE yang saling berkaitan (misalnya pasangan kode Masalah/P dan kode Penyebab/C) ke dalam satu blok penjelasan agar tidak bertele-tele dan repetitif.
++2. Format gabungan HARUS persis seperti ini:
++[Kode 1 & Kode 2] - [Gabungan Deskripsi Singkat Poin PCNE]
++[Penjelasan analitis klinis yang padat dan mencakup kedua kode tersebut secara komprehensif]
++
++Contoh Assessment yang BENAR (Format Gabungan):
++[P1.3 & C1.6] - Gejala tidak diobati akibat pengobatan tidak lengkap
++Kadar Trigliserida (TG) pasien saat ini mencapai 250 mg/dL (hipertrigliseridemia), namun belum mendapatkan terapi penurun lipid yang diresepkan oleh dokter untuk mencegah risiko komplikasi kardiovaskular.
++
++Contoh Plan yang BENAR (Format Gabungan):
++[I1.3 & I3.6] - Intervensi diusulkan kepada penulis resep untuk memulai obat baru
++Mengusulkan kepada dokter penanggung jawab untuk mempertimbangkan pemberian terapi penurun lipid (seperti golongan Fibrat atau Statin) untuk mengatasi kondisi hipertrigliseridemia.
++
++Kembalikan respon HANYA dalam bentuk JSON murni tanpa awalan/akhiran markdown blocks (tanpa \`\`\`json), dengan struktur:
+ {
+-  "assessment": "string",
+-  "plan": "string"
++  "assessment": "string (gabungkan semua poin assessment dengan newline ganda (\\n\\n) jika ada lebih dari 1)",
++  "plan": "string (gabungkan semua poin plan dengan newline ganda (\\n\\n) jika ada lebih dari 1)",
++  "references": [{"title": "Nama Guideline/Jurnal", "url": "https://..."}]
+ }
+ 
++Instruksi Referensi (WAJIB DIIKUTI):
++- Anda WAJIB memberikan referensi yang relevan untuk **SETIAP** masalah klinis spesifik atau intervensi kritis yang Anda angkat (Misalnya: Jika Anda membahas masalah Lisinopril DAN kontraindikasi Etoricoxib, Anda harus mencantumkan minimal 2 referensi yang mewakili kedua topik tersebut).
++- OPTIMASI WAKTU TUNGGU (LATENCY): JANGAN gunakan fitur Google Search jika Anda sudah mengetahui nomor DOI jurnal tersebut secara pasti (langsung berikan format \`https://doi.org/[DOI]\`). 
++- KARENA FITUR GOOGLE SEARCH ANDA AKTIF, HANYA lakukan pencarian web JIKA Anda merujuk pada artikel/pedoman/website obat yang tidak memiliki DOI, guna menemukan URL ASLI (Direct Link) yang 100% aktif dan valid.
++- Referensi harus berkualitas tinggi HANYA dari jenis literatur berikut: Guideline Medis, SRMA, RCT, atau Cohort Study. (DILARANG MENGGUNAKAN SUMBER LAIN SELAIN 4 JENIS INI).
++- Berikan URL LANGSUNG (*direct link*) yang spesifik. JANGAN MENGARANG ATAU BERHALUSINASI URL. Jika ragu, selalu gunakan DOI.
++- Jika merujuk ke obat, gunakan link spesifik halamannya di drugs.com (contoh: \`https://www.drugs.com/monograph/amlodipine.html\`).
++- Judul ("title") harus spesifik menyebutkan nama guideline atau topik jurnalnya secara akurat.
++
++REFERENSI KODE PCNE v9.00 (GUNAKAN KODE INI SECARA KETAT, JANGAN MENGARANG):
++
++--- MASALAH & PENYEBAB (Untuk Assessment) ---
++P1.1 Tidak ada efek dari terapi obat
++P1.2 Efek terapi obat tidak optimal
++P1.3 Gejala atau indikasi yang tidak diobati
++P2.1 Kejadian obat yang merugikan (mungkin) terjadi
++P3.1 Masalah pengobatan yang berkaitan dengan efektivitas biaya
++P3.2 Pengobatan yang tidak diperlukan
++P3.3 Masalah terkait obat yang tidak jelas
++C1.1 Obat tidak sesuai dengan pedoman / formularium
++C1.2 Obat sesuai pedoman, namun terdapat kontraindikasi
++C1.3 Tidak ada indikasi untuk obat
++C1.4 Kombinasi tidak tepat (obat-obat, obat-herbal)
++C1.5 Duplikasi dari kelompok terapeutik/bahan aktif
++C1.6 Pengobatan tidak diberikan atau tidak lengkap
++C1.7 Terlalu banyak obat yang diresepkan untuk satu indikasi
++C2.1 Bentuk sediaan obat yang tidak sesuai dengan pasien
++C3.1 Dosis obat terlalu rendah
++C3.2 Dosis obat terlalu tinggi
++C3.3 Regimen dosis kurang
++C3.4 Regimen dosis terlalu sering
++C3.5 Instruksi waktu pemberian dosis salah, tidak jelas
++C4.1 Durasi pengobatan terlalu singkat
++C4.2 Durasi pengobatan terlalu lama
++C5.1 Obat yang diresepkan tidak tersedia
++C5.2 Informasi yang diperlukan tidak tersedia
++C5.3 Salah obat, kekuatan sediaan atau regimen
++C5.4 Salah penyiapan obat atau kekuatan dosis
++C6.1 Waktu pemberian obat atau interval dosis tidak tepat
++C6.2 Obat yang diberikan kurang
++C6.3 Obat yang diberikan berlebih
++C6.4 Obat tidak diberikan sama sekali
++C6.5 Obat yang diberikan salah
++C6.6 Obat diberikan melalui rute yang salah
++C7.1 Pasien menggunakan obat lebih sedikit/tidak menggunakan
++C7.2 Pasien menggunakan obat lebih banyak dari yang diresepkan
++C7.3 Pasien menyalahgunakan obat
++C7.4 Pasien menggunakan obat yang tidak perlu
++C7.5 Pasien mengonsumsi makanan yang menyebabkan interaksi
++C7.6 Pasien menyimpan obat secara tidak tepat
++C7.7 Waktu atau interval pemberian dosis yang tidak tepat
++C7.8 Pasien menggunakan obat dengan cara yang salah
++C7.9 Pasien tidak dapat menggunakan obat/bentuk sediaan sesuai petunjuk
++C7.10 Pasien tidak dapat memahami instruksi dengan benar
++C8.1 Tidak ada rekonsiliasi obat saat pasien dipindahkan
++C8.2 Tidak ada daftar obat terbaru yang tersedia
++C8.3 Informasi tentang obat-obatan pada saat pemulangan/transfer tidak lengkap
++C8.4 Informasi klinis tentang pasien tidak memadai
++C8.5 Pasien belum menerima obat yang diperlukan saat pemulangan
++C9.1 Tidak terdapat hasil pemantauan terapi obat yang sesuai
++C9.2 Penyebab lain; sebutkan
++C9.3 Tidak ada penyebab yang jelas
++
++--- RENCANA INTERVENSI (Untuk Plan) ---
++I0.1 Tanpa Intervensi
++I1.1 Dokter penulis resep hanya diinformasikan
++I1.2 Dokter penulis resep meminta informasi
++I1.3 Intervensi diusulkan kepada dokter penulis resep
++I1.4 Intervensi dibahas dengan dokter penulis resep
++I2.1 Konseling kepada pasien terkait obat
++I2.2 Tersedia informasi tertulis
++I2.3 Pasien disarankan kembali ke dokter
++I2.4 Menyampaikan kepada anggota keluarga / pengasuh
++I3.1 Obat diubah menjadi ...
++I3.2 Dosis diubah menjadi ...
++I3.3 Formulasi diubah menjadi ...
++I3.4 Petunjuk penggunaan diubah menjadi…
++I3.5 Obat ditunda atau dihentikan
++I3.6 Obat dimulai
++I4.1 Intervensi lainnya (sebutkan)
++I4.2 Efek samping dilaporkan ke pihak berwenang
++
+ Data Pasien:
+ Subjective: ${subjective}
+ Objective: ${objective}
+@@ -75,6 +255,7 @@ Objective: ${objective}
+ 
+       setAssessment(parsed.assessment || '');
+       setPlan(parsed.plan || '');
++      setReferences(parsed.references || null);
+       
+       toast({
+         title: "AI Generation Berhasil",
+@@ -103,7 +284,8 @@ Objective: ${objective}
+           subjective,
+           objective,
+           assessment,
+-          plan
++          plan,
++          references
+         });
+ 
+       if (error) throw error;
+@@ -149,7 +331,12 @@ Objective: ${objective}
+         </div>
+ 
+         <div className="space-y-2">
+-          <Label htmlFor="subjective">Subjective (S)</Label>
++          <div className="flex justify-between items-center">
++            <Label htmlFor="subjective">Subjective (S)</Label>
++            <Button type="button" variant="ghost" size="sm" className="h-6 px-2" onClick={() => handleCopy(subjective, "Subjective")}>
++              <Copy className="w-3 h-3 mr-1" /> Salin
++            </Button>
++          </div>
+           <Textarea 
+             id="subjective" 
+             rows={4}
+@@ -160,7 +347,12 @@ Objective: ${objective}
+         </div>
+ 
+         <div className="space-y-2">
+-          <Label htmlFor="objective">Objective (O)</Label>
++          <div className="flex justify-between items-center">
++            <Label htmlFor="objective">Objective (O)</Label>
++            <Button type="button" variant="ghost" size="sm" className="h-6 px-2" onClick={() => handleCopy(objective, "Objective")}>
++              <Copy className="w-3 h-3 mr-1" /> Salin
++            </Button>
++          </div>
+           <Textarea 
+             id="objective" 
+             rows={4}
+@@ -175,7 +367,12 @@ Objective: ${objective}
+         </Button>
+ 
+         <div className="space-y-2">
+-          <Label htmlFor="assessment">Assessment (A)</Label>
++          <div className="flex justify-between items-center">
++            <Label htmlFor="assessment">Assessment (A)</Label>
++            <Button type="button" variant="ghost" size="sm" className="h-6 px-2" onClick={() => handleCopy(assessment, "Assessment")}>
++              <Copy className="w-3 h-3 mr-1" /> Salin
++            </Button>
++          </div>
+           <Textarea 
+             id="assessment" 
+             rows={4}
+@@ -186,7 +383,12 @@ Objective: ${objective}
+         </div>
+ 
+         <div className="space-y-2">
+-          <Label htmlFor="plan">Plan (P)</Label>
++          <div className="flex justify-between items-center">
++            <Label htmlFor="plan">Plan (P)</Label>
++            <Button type="button" variant="ghost" size="sm" className="h-6 px-2" onClick={() => handleCopy(plan, "Plan")}>
++              <Copy className="w-3 h-3 mr-1" /> Salin
++            </Button>
++          </div>
+           <Textarea 
+             id="plan" 
+             rows={4}
+@@ -196,6 +398,32 @@ Objective: ${objective}
+           />
+         </div>
+ 
++        {references && references.length > 0 && (
++          <div className="space-y-2 pt-4 border-t">
++            <Label className="text-primary text-base">Referensi Ilmiah</Label>
++            <div className="bg-slate-50 dark:bg-slate-900 p-4 rounded-md border">
++              <ul className="space-y-2">
++                {references.map((ref, idx) => (
++                  <li key={idx}>
++                    <a 
++                      href={ref.url} 
++                      target="_blank" 
++                      rel="noopener noreferrer"
++                      className="text-sm text-blue-600 hover:underline flex items-start gap-2"
++                    >
++                      <span className="text-xs bg-blue-100 text-blue-800 px-1.5 py-0.5 rounded shrink-0 mt-0.5">Link</span>
++                      {ref.title}
++                    </a>
++                  </li>
++                ))}
++              </ul>
++              <p className="text-xs text-muted-foreground mt-3 italic">
++                * Referensi disuplai oleh AI untuk memvalidasi saran intervensi. Data ini bersifat statis dan akan disimpan secara otomatis.
++              </p>
++            </div>
++          </div>
++        )}
++
+         <div className="pt-4">
+           <Button onClick={handleSave} disabled={saving} className="w-full" size="lg">
+             {saving ? 'Menyimpan...' : 'Simpan CPPT'}
+diff --git a/src/pages/PatientDetail.tsx b/src/pages/PatientDetail.tsx
+index 49bccbb..2e96831 100644
+--- a/src/pages/PatientDetail.tsx
++++ b/src/pages/PatientDetail.tsx
+@@ -15,6 +15,7 @@ export interface CpptRecord {
+   objective: string
+   assessment: string
+   plan: string
++  references?: { title: string; url: string }[] | null
+ }
+ 
+ export default function PatientDetail() {
+@@ -130,6 +131,26 @@ export default function PatientDetail() {
+                   <h4 className="font-semibold text-sm">P (Plan)</h4>
+                   <p className="text-sm whitespace-pre-wrap bg-slate-50 dark:bg-slate-900 p-3 rounded-md">{record.plan}</p>
+                 </div>
++                {record.references && record.references.length > 0 && (
++                  <div className="mt-4 pt-4 border-t">
++                    <h4 className="font-semibold text-sm mb-2 text-primary">Referensi Ilmiah (Literatur & Panduan)</h4>
++                    <ul className="space-y-2">
++                      {record.references.map((ref, idx) => (
++                        <li key={idx}>
++                          <a 
++                            href={ref.url} 
++                            target="_blank" 
++                            rel="noopener noreferrer"
++                            className="text-sm text-blue-600 hover:underline flex items-start gap-2"
++                          >
++                            <span className="text-xs bg-blue-100 text-blue-800 px-1.5 py-0.5 rounded shrink-0 mt-0.5">Link</span>
++                            {ref.title}
++                          </a>
++                        </li>
++                      ))}
++                    </ul>
++                  </div>
++                )}
+               </CardContent>
+             </Card>
+           ))
+diff --git a/src/pages/Settings.tsx b/src/pages/Settings.tsx
+index 656f7d2..609dce1 100644
+--- a/src/pages/Settings.tsx
++++ b/src/pages/Settings.tsx
+@@ -1,5 +1,6 @@
+ import { useState, useEffect } from "react"
+ import { setApiKey, getApiKey } from "@/lib/aiConfig"
++import { GoogleGenerativeAI } from "@google/generative-ai"
+ import { useToast } from "@/hooks/use-toast"
+ import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card"
+ import { Input } from "@/components/ui/input"
+@@ -8,6 +9,7 @@ import { Label } from "@/components/ui/label"
+ 
+ export default function Settings() {
+   const [apiKey, setApiKeyValue] = useState("")
++  const [isTesting, setIsTesting] = useState(false)
+   const { toast } = useToast()
+ 
+   useEffect(() => {
+@@ -25,6 +27,41 @@ export default function Settings() {
+     })
+   }
+ 
++  const handleTestConnection = async () => {
++    if (!apiKey) {
++      toast({
++        title: "Error",
++        description: "Please enter an API Key first.",
++        variant: "destructive",
++      })
++      return
++    }
++
++    setIsTesting(true)
++    try {
++      const genAI = new GoogleGenerativeAI(apiKey)
++      const model = genAI.getGenerativeModel({ model: "gemini-3.6-flash" })
++      
++      const result = await model.generateContent("Respond with 'Connection successful'.")
++      const response = await result.response
++      
++      if (response.text()) {
++        toast({
++          title: "Connection Successful",
++          description: "Your Gemini API Key is working correctly.",
++        })
++      }
++    } catch (error: any) {
++      toast({
++        title: "Connection Failed",
++        description: error.message || "Failed to connect to Gemini API.",
++        variant: "destructive",
++      })
++    } finally {
++      setIsTesting(false)
++    }
++  }
++
+   return (
+     <div className="p-4 flex justify-center mt-10">
+       <Card className="w-full max-w-md">
+@@ -44,8 +81,11 @@ export default function Settings() {
+             />
+           </div>
+         </CardContent>
+-        <CardFooter>
+-          <Button onClick={handleSave}>Save Key</Button>
++        <CardFooter className="flex gap-4">
++          <Button onClick={handleSave} className="flex-1">Save Key</Button>
++          <Button onClick={handleTestConnection} variant="secondary" className="flex-1" disabled={isTesting}>
++            {isTesting ? "Testing..." : "Test Connection"}
++          </Button>
+         </CardFooter>
+       </Card>
+     </div>
+diff --git a/supabase/.gitignore b/supabase/.gitignore
+new file mode 100644
+index 0000000..ad9264f
+--- /dev/null
++++ b/supabase/.gitignore
+@@ -0,0 +1,8 @@
++# Supabase
++.branches
++.temp
++
++# dotenvx
++.env.keys
++.env.local
++.env.*.local
+diff --git a/supabase/config.toml b/supabase/config.toml
+new file mode 100644
+index 0000000..c413b63
+--- /dev/null
++++ b/supabase/config.toml
+@@ -0,0 +1,414 @@
++# For detailed configuration reference documentation, visit:
++# https://supabase.com/docs/guides/local-development/cli/config
++# A string used to distinguish different Supabase projects on the same host. Defaults to the
++# working directory name when running `supabase init`.
++project_id = "SOAP"
++
++[api]
++enabled = true
++# Port to use for the API URL.
++port = 54331
++# Schemas to expose in your API. Tables, views and stored procedures in this schema will get API
++# endpoints. `public` and `graphql_public` schemas are included by default.
++schemas = ["public", "graphql_public"]
++# Extra schemas to add to the search_path of every request.
++extra_search_path = ["public", "extensions"]
++# The maximum number of rows returns from a view, table, or stored procedure. Limits payload size
++# for accidental or malicious requests.
++max_rows = 1000
++# Controls whether new tables, views, sequences and functions created in the `public` schema by
++# `postgres` are reachable through the Data API roles (`anon`, `authenticated`, `service_role`)
++# without explicit GRANTs. When unset, new entities are NOT auto-exposed, matching the new cloud
++# default. Set to `true` to keep the legacy behaviour of auto-exposing new entities; this is
++# deprecated and the field is removed on 2026-10-30 once the always-revoked behaviour is permanent.
++# auto_expose_new_tables = true
++
++[api.tls]
++# Enable HTTPS endpoints locally using a self-signed certificate.
++enabled = false
++# Paths to self-signed certificate pair.
++# cert_path = "../certs/my-cert.pem"
++# key_path = "../certs/my-key.pem"
++
++[db]
++# Port to use for the local database URL.
++port = 54332
++# Port used by db diff command to initialize the shadow database.
++shadow_port = 54330
++# Maximum amount of time to wait for health check when starting the local database.
++health_timeout = "5m"
++# The database major version to use. This has to be the same as your remote database's. Run `SHOW
++# server_version;` on the remote database to check.
++major_version = 17
++
++[db.pooler]
++enabled = false
++# Port to use for the local connection pooler.
++port = 54339
++# Specifies when a server connection can be reused by other clients.
++# Configure one of the supported pooler modes: `transaction`, `session`.
++pool_mode = "transaction"
++# How many server connections to allow per user/database pair.
++default_pool_size = 20
++# Maximum number of client connections allowed.
++max_client_conn = 100
++
++# [db.vault]
++# secret_key = "env(SECRET_VALUE)"
++
++[db.migrations]
++# If disabled, migrations will be skipped during a db push or reset.
++enabled = true
++# Specifies an ordered list of schema files, directories, or glob patterns that describe your database.
++# Supports paths relative to supabase directory: "./schemas/*.sql", "./database".
++schema_paths = []
++
++[db.seed]
++# If enabled, seeds the database after migrations during a db reset.
++enabled = true
++# Specifies an ordered list of seed files to load during db reset.
++# Supports glob patterns relative to supabase directory: "./seeds/*.sql"
++sql_paths = ["./seed.sql"]
++
++[db.network_restrictions]
++# Enable management of network restrictions.
++enabled = false
++# List of IPv4 CIDR blocks allowed to connect to the database.
++# Defaults to allow all IPv4 connections. Set empty array to block all IPs.
++allowed_cidrs = ["0.0.0.0/0"]
++# List of IPv6 CIDR blocks allowed to connect to the database.
++# Defaults to allow all IPv6 connections. Set empty array to block all IPs.
++allowed_cidrs_v6 = ["::/0"]
++
++# Uncomment to reject non-secure connections to the database.
++# [db.ssl_enforcement]
++# enabled = true
++
++[realtime]
++enabled = true
++# Bind realtime via either IPv4 or IPv6. (default: IPv4)
++# ip_version = "IPv6"
++# The maximum length in bytes of HTTP request headers. (default: 4096)
++# max_header_length = 4096
++
++[studio]
++enabled = false
++# Port to use for Supabase Studio.
++port = 54333
++# External URL of the API server that frontend connects to.
++api_url = "http://127.0.0.1"
++# OpenAI API Key to use for Supabase AI in the Supabase Studio.
++openai_api_key = "env(OPENAI_API_KEY)"
++
++# Email testing server. Emails sent with the local dev setup are not actually sent - rather, they
++# are monitored, and you can view the emails that would have been sent from the web interface.
++[local_smtp]
++enabled = true
++# Port to use for the email testing server web interface.
++port = 54334
++# Uncomment to expose additional ports for testing user applications that send emails.
++# smtp_port = 54325
++# pop3_port = 54326
++# admin_email = "admin@email.com"
++# sender_name = "Admin"
++
++[storage]
++enabled = false
++# The maximum file size allowed (e.g. "5MB", "500KB").
++file_size_limit = "50MiB"
++
++# Uncomment to configure local storage buckets
++# [storage.buckets.images]
++# public = false
++# file_size_limit = "50MiB"
++# allowed_mime_types = ["image/png", "image/jpeg"]
++# objects_path = "./images"
++
++# Allow connections via S3 compatible clients
++[storage.s3_protocol]
++enabled = true
++
++# Image transformation API is available to Supabase Pro plan.
++# [storage.image_transformation]
++# enabled = true
++
++# Store analytical data in S3 for running ETL jobs over Iceberg Catalog
++# This feature is only available on the hosted platform.
++[storage.analytics]
++enabled = false
++max_namespaces = 5
++max_tables = 10
++max_catalogs = 2
++
++# Analytics Buckets is available to Supabase Pro plan.
++# [storage.analytics.buckets.my-warehouse]
++
++# Store vector embeddings in S3 for large and durable datasets
++[storage.vector]
++enabled = true
++max_buckets = 10
++max_indexes = 5
++
++# Vector Buckets is available to Supabase Pro plan.
++# [storage.vector.buckets.documents-openai]
++
++[auth]
++enabled = true
++# The base URL of your website. Used as an allow-list for redirects and for constructing URLs used
++# in emails.
++site_url = "http://127.0.0.1:3000"
++# The public URL that Auth serves on. Defaults to the API external URL with `/auth/v1` appended.
++# external_url = ""
++# A list of *exact* URLs that auth providers are permitted to redirect to post authentication.
++additional_redirect_urls = ["https://127.0.0.1:3000"]
++# How long tokens are valid for, in seconds. Defaults to 3600 (1 hour), maximum 604,800 (1 week).
++jwt_expiry = 3600
++# JWT issuer URL. If not set, defaults to auth.external_url.
++# jwt_issuer = ""
++# Path to JWT signing key. DO NOT commit your signing keys file to git.
++# signing_keys_path = "./signing_keys.json"
++# If disabled, the refresh token will never expire.
++enable_refresh_token_rotation = true
++# Allows refresh tokens to be reused after expiry, up to the specified interval in seconds.
++# Requires enable_refresh_token_rotation = true.
++refresh_token_reuse_interval = 10
++# Allow/disallow new user signups to your project.
++enable_signup = true
++# Allow/disallow anonymous sign-ins to your project.
++enable_anonymous_sign_ins = false
++# Allow/disallow testing manual linking of accounts
++enable_manual_linking = false
++# Passwords shorter than this value will be rejected as weak. Minimum 6, recommended 8 or more.
++minimum_password_length = 6
++# Passwords that do not meet the following requirements will be rejected as weak. Supported values
++# are: `letters_digits`, `lower_upper_letters_digits`, `lower_upper_letters_digits_symbols`
++password_requirements = ""
++
++# Configure passkey sign-ins.
++# [auth.passkey]
++# enabled = false
++
++# Configure WebAuthn relying party settings (required when passkey is enabled).
++# [auth.webauthn]
++# rp_display_name = "Supabase"
++# rp_id = "localhost"
++# rp_origins = ["http://127.0.0.1:3000"]
++
++[auth.rate_limit]
++# Number of emails that can be sent per hour. Requires auth.email.smtp to be enabled.
++email_sent = 2
++# Number of SMS messages that can be sent per hour. Requires auth.sms to be enabled.
++sms_sent = 30
++# Number of anonymous sign-ins that can be made per hour per IP address. Requires enable_anonymous_sign_ins = true.
++anonymous_users = 30
++# Number of sessions that can be refreshed in a 5 minute interval per IP address.
++token_refresh = 150
++# Number of sign up and sign-in requests that can be made in a 5 minute interval per IP address (excludes anonymous users).
++sign_in_sign_ups = 30
++# Number of OTP / Magic link verifications that can be made in a 5 minute interval per IP address.
++token_verifications = 30
++# Number of Web3 logins that can be made in a 5 minute interval per IP address.
++web3 = 30
++
++# Configure one of the supported captcha providers: `hcaptcha`, `turnstile`.
++# [auth.captcha]
++# enabled = true
++# provider = "hcaptcha"
++# secret = ""
++
++[auth.email]
++# Allow/disallow new user signups via email to your project.
++enable_signup = true
++# If enabled, a user will be required to confirm any email change on both the old, and new email
++# addresses. If disabled, only the new email is required to confirm.
++double_confirm_changes = true
++# If enabled, users need to confirm their email address before signing in.
++enable_confirmations = false
++# If enabled, users will need to reauthenticate or have logged in recently to change their password.
++secure_password_change = false
++# Controls the minimum amount of time that must pass before sending another signup confirmation or password reset email.
++max_frequency = "1s"
++# Number of characters used in the email OTP.
++otp_length = 6
++# Number of seconds before the email OTP expires (defaults to 1 hour).
++otp_expiry = 3600
++
++# Use a production-ready SMTP server
++# [auth.email.smtp]
++# enabled = true
++# host = "smtp.sendgrid.net"
++# port = 587
++# user = "apikey"
++# pass = "env(SENDGRID_API_KEY)"
++# admin_email = "admin@email.com"
++# sender_name = "Admin"
++
++# Uncomment to customize email template
++# [auth.email.template.invite]
++# subject = "You have been invited"
++# content_path = "./supabase/templates/invite.html"
++
++# Uncomment to customize notification email template
++# [auth.email.notification.password_changed]
++# enabled = true
++# subject = "Your password has been changed"
++# content_path = "./templates/password_changed_notification.html"
++
++[auth.sms]
++# Allow/disallow new user signups via SMS to your project.
++enable_signup = false
++# If enabled, users need to confirm their phone number before signing in.
++enable_confirmations = false
++# Template for sending OTP to users
++template = "Your code is {{ .Code }}"
++# Controls the minimum amount of time that must pass before sending another sms otp.
++max_frequency = "5s"
++
++# Use pre-defined map of phone number to OTP for testing.
++# [auth.sms.test_otp]
++# 4152127777 = "123456"
++
++# Configure logged in session timeouts.
++# [auth.sessions]
++# Force log out after the specified duration.
++# timebox = "24h"
++# Force log out if the user has been inactive longer than the specified duration.
++# inactivity_timeout = "8h"
++
++# This hook runs before a new user is created and allows developers to reject the request based on the incoming user object.
++# [auth.hook.before_user_created]
++# enabled = true
++# uri = "pg-functions://postgres/auth/before-user-created-hook"
++
++# This hook runs before a token is issued and allows you to add additional claims based on the authentication method used.
++# [auth.hook.custom_access_token]
++# enabled = true
++# uri = "pg-functions://<database>/<schema>/<hook_name>"
++
++# Configure one of the supported SMS providers: `twilio`, `twilio_verify`, `messagebird`, `textlocal`, `vonage`.
++[auth.sms.twilio]
++enabled = false
++account_sid = ""
++message_service_sid = ""
++# DO NOT commit your Twilio auth token to git. Use environment variable substitution instead:
++auth_token = "env(SUPABASE_AUTH_SMS_TWILIO_AUTH_TOKEN)"
++
++# Multi-factor-authentication is available to Supabase Pro plan.
++[auth.mfa]
++# Control how many MFA factors can be enrolled at once per user.
++max_enrolled_factors = 10
++
++# Control MFA via App Authenticator (TOTP)
++[auth.mfa.totp]
++enroll_enabled = false
++verify_enabled = false
++
++# Configure MFA via Phone Messaging
++[auth.mfa.phone]
++enroll_enabled = false
++verify_enabled = false
++otp_length = 6
++template = "Your code is {{ .Code }}"
++max_frequency = "5s"
++
++# Configure MFA via WebAuthn
++# [auth.mfa.web_authn]
++# enroll_enabled = true
++# verify_enabled = true
++
++# Use an external OAuth provider. The full list of providers are: `apple`, `azure`, `bitbucket`,
++# `discord`, `facebook`, `github`, `gitlab`, `google`, `keycloak`, `linkedin_oidc`, `notion`, `twitch`,
++# `twitter`, `x`, `slack`, `spotify`, `workos`, `zoom`.
++[auth.external.apple]
++enabled = false
++client_id = ""
++# DO NOT commit your OAuth provider secret to git. Use environment variable substitution instead:
++secret = "env(SUPABASE_AUTH_EXTERNAL_APPLE_SECRET)"
++# Overrides the default auth callback URL derived from auth.external_url.
++redirect_uri = ""
++# Overrides the default auth provider URL. Used to support self-hosted gitlab, single-tenant Azure,
++# or any other third-party OIDC providers.
++url = ""
++# If enabled, the nonce check will be skipped. Required for local sign in with Google auth.
++skip_nonce_check = false
++# If enabled, it will allow the user to successfully authenticate when the provider does not return an email address.
++email_optional = false
++
++# Allow Solana wallet holders to sign in to your project via the Sign in with Solana (SIWS, EIP-4361) standard.
++# You can configure "web3" rate limit in the [auth.rate_limit] section and set up [auth.captcha] if self-hosting.
++[auth.web3.solana]
++enabled = false
++
++# Use Firebase Auth as a third-party provider alongside Supabase Auth.
++[auth.third_party.firebase]
++enabled = false
++# project_id = "my-firebase-project"
++
++# Use Auth0 as a third-party provider alongside Supabase Auth.
++[auth.third_party.auth0]
++enabled = false
++# tenant = "my-auth0-tenant"
++# tenant_region = "us"
++
++# Use AWS Cognito (Amplify) as a third-party provider alongside Supabase Auth.
++[auth.third_party.aws_cognito]
++enabled = false
++# user_pool_id = "my-user-pool-id"
++# user_pool_region = "us-east-1"
++
++# Use Clerk as a third-party provider alongside Supabase Auth.
++[auth.third_party.clerk]
++enabled = false
++# Obtain from https://clerk.com/setup/supabase
++# domain = "example.clerk.accounts.dev"
++
++# OAuth server configuration
++[auth.oauth_server]
++# Enable OAuth server functionality
++enabled = false
++# Path for OAuth consent flow UI
++authorization_url_path = "/oauth/consent"
++# Allow dynamic client registration
++allow_dynamic_registration = false
++
++[edge_runtime]
++enabled = true
++# Supported request policies: `oneshot`, `per_worker`.
++# `per_worker` (default) — enables hot reload during local development.
++# `oneshot` — fallback mode if hot reload causes issues (e.g. in large repos or with symlinks).
++policy = "per_worker"
++# Port to attach the Chrome inspector for debugging edge functions.
++inspector_port = 8083
++# The Deno major version to use.
++deno_version = 2
++
++# [edge_runtime.secrets]
++# secret_key = "env(SECRET_VALUE)"
++
++[analytics]
++enabled = false
++port = 54337
++# Configure one of the supported backends: `postgres`, `bigquery`.
++backend = "postgres"
++
++# Experimental features may be deprecated any time
++[experimental]
++# Configures Postgres storage engine to use OrioleDB (S3)
++orioledb_version = ""
++# Configures S3 bucket URL, eg. <bucket_name>.s3-<region>.amazonaws.com
++s3_host = "env(S3_HOST)"
++# Configures S3 bucket region, eg. us-east-1
++s3_region = "env(S3_REGION)"
++# Configures AWS_ACCESS_KEY_ID for S3 bucket
++s3_access_key = "env(S3_ACCESS_KEY)"
++# Configures AWS_SECRET_ACCESS_KEY for S3 bucket
++s3_secret_key = "env(S3_SECRET_KEY)"
++
++# pg-delta is the schema diff engine for db diff / db pull / db remote commit.
++# Set enabled = false to fall back to the legacy migra engine.
++[experimental.pgdelta]
++enabled = true
++# Directory under `supabase/` where declarative files are written.
++# declarative_schema_path = "./database"
++# JSON string passed through to pg-delta SQL formatting.
++# format_options = "{\"keywordCase\":\"upper\",\"indent\":2,\"maxWidth\":80,\"commaStyle\":\"trailing\"}"
+diff --git a/supabase/migrations/20260814_init.sql b/supabase/migrations/20260814_init.sql
+index 8289d9c..0a3090e 100644
+--- a/supabase/migrations/20260814_init.sql
++++ b/supabase/migrations/20260814_init.sql
+@@ -36,3 +36,6 @@ CREATE POLICY "Users can only see their own cppt_records"
+ 
+ CREATE POLICY "Users can only insert their own cppt_records" 
+   ON cppt_records FOR INSERT WITH CHECK (auth.uid() = user_id);
++
++GRANT ALL ON TABLE public.patients TO authenticated, anon, service_role;
++GRANT ALL ON TABLE public.cppt_records TO authenticated, anon, service_role;
+diff --git a/supabase/migrations/20260815232615_shared_hospital.sql b/supabase/migrations/20260815232615_shared_hospital.sql
+new file mode 100644
+index 0000000..0e66d02
+--- /dev/null
++++ b/supabase/migrations/20260815232615_shared_hospital.sql
+@@ -0,0 +1,60 @@
++-- 1. Update patients table
++ALTER TABLE patients 
++  ADD COLUMN IF NOT EXISTS is_active BOOLEAN DEFAULT true,
++  ADD COLUMN IF NOT EXISTS admitted_at TIMESTAMPTZ DEFAULT NOW();
++
++-- 2. Create patient_handlers table
++CREATE TABLE IF NOT EXISTS patient_handlers (
++  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
++  patient_id UUID REFERENCES patients(id) ON DELETE CASCADE NOT NULL,
++  user_id UUID REFERENCES auth.users(id) NOT NULL,
++  created_at TIMESTAMPTZ DEFAULT NOW(),
++  UNIQUE(patient_id, user_id)
++);
++
++-- 3. Enable RLS on patient_handlers
++ALTER TABLE patient_handlers ENABLE ROW LEVEL SECURITY;
++
++-- 4. Update RLS Policies for Shared Hospital Mode
++
++-- Drop old policies that restricted visibility to owner
++DROP POLICY IF EXISTS "Users can only see their own patients" ON patients;
++DROP POLICY IF EXISTS "Users can only insert their own patients" ON patients;
++DROP POLICY IF EXISTS "Users can only see their own cppt_records" ON cppt_records;
++DROP POLICY IF EXISTS "Users can only insert their own cppt_records" ON cppt_records;
++
++-- New Policies for Patients: Anyone authenticated can SELECT and INSERT
++CREATE POLICY "Authenticated users can see all patients" 
++  ON patients FOR SELECT TO authenticated USING (true);
++
++CREATE POLICY "Authenticated users can insert patients" 
++  ON patients FOR INSERT TO authenticated WITH CHECK (true);
++
++CREATE POLICY "Authenticated users can update patients" 
++  ON patients FOR UPDATE TO authenticated USING (true);
++
++-- New Policies for CPPT Records: Anyone authenticated can SELECT and INSERT
++CREATE POLICY "Authenticated users can see all cppt_records" 
++  ON cppt_records FOR SELECT TO authenticated USING (true);
++
++CREATE POLICY "Authenticated users can insert cppt_records" 
++  ON cppt_records FOR INSERT TO authenticated WITH CHECK (true);
++
++-- New Policies for Patient Handlers: Users can see handlers matching their own ID, but can insert for themselves
++CREATE POLICY "Users can see their own patient handlers"
++  ON patient_handlers FOR SELECT TO authenticated USING (user_id = auth.uid());
++
++CREATE POLICY "Users can insert their own patient handlers"
++  ON patient_handlers FOR INSERT TO authenticated WITH CHECK (user_id = auth.uid());
++
++CREATE POLICY "Users can delete their own patient handlers"
++  ON patient_handlers FOR DELETE TO authenticated USING (user_id = auth.uid());
++
++-- Optional: Allow users to delete all handlers for a patient when discharging
++-- For simplicity, since any authenticated user can discharge, we allow deleting any handler
++DROP POLICY IF EXISTS "Users can delete their own patient handlers" ON patient_handlers;
++CREATE POLICY "Authenticated users can delete any patient handlers"
++  ON patient_handlers FOR DELETE TO authenticated USING (true);
++
++-- Grant privileges
++GRANT ALL ON TABLE public.patient_handlers TO authenticated, anon, service_role;
+diff --git a/supabase/migrations/20260816_add_references.sql b/supabase/migrations/20260816_add_references.sql
+new file mode 100644
+index 0000000..25b1458
+--- /dev/null
++++ b/supabase/migrations/20260816_add_references.sql
+@@ -0,0 +1 @@
++ALTER TABLE public.cppt_records ADD COLUMN IF NOT EXISTS "references" JSONB;

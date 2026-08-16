@@ -57,8 +57,13 @@ export default function Dashboard() {
       const activePatients = data
         .map(h => h.patients as unknown as Patient)
         .filter(p => p && p.is_active !== false)
+        .sort((a, b) => {
+          const dateA = new Date(a.admitted_at || a.created_at || 0).getTime();
+          const dateB = new Date(b.admitted_at || b.created_at || 0).getTime();
+          return dateB - dateA;
+        });
         
-      setPatients(activePatients)
+      setPatients(activePatients);
     } else if (error) {
       console.error("Error fetching patients:", error)
     }

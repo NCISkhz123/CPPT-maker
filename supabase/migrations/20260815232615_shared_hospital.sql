@@ -50,11 +50,18 @@ CREATE POLICY "Users can insert their own patient handlers"
 CREATE POLICY "Users can delete their own patient handlers"
   ON patient_handlers FOR DELETE TO authenticated USING (user_id = auth.uid());
 
--- Optional: Allow users to delete all handlers for a patient when discharging
--- For simplicity, since any authenticated user can discharge, we allow deleting any handler
+-- Optional: Allow users to delete handlers for a patient they handle when discharging
 DROP POLICY IF EXISTS "Users can delete their own patient handlers" ON patient_handlers;
-CREATE POLICY "Authenticated users can delete any patient handlers"
-  ON patient_handlers FOR DELETE TO authenticated USING (true);
+DROP POLICY IF EXISTS "Authenticated users can delete any patient handlers" ON patient_handlers;
+
+CREATE POLICY "Users can delete handlers for their handled patients"
+  ON patient_handlers FOR DELETE TO authenticated 
+  USING (patient_id IN (SELECT patient_id FROM patient_handlers WHERE user_id = auth.uid()));
 
 -- Grant privileges
 GRANT ALL ON TABLE public.patient_handlers TO authenticated, anon, service_role;
+
+-- 5. Data Migration: Populate patient_handlers for existing patients
+INSERT INTO patient_handlers (patient_id, user_id, created_at)
+SELECT id, user_id, created_at FROM patients
+ON CONFLICT (patient_id, user_id) DO NOTHING;

@@ -1,113 +1,136 @@
-import { useState, useEffect } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
-import { supabase } from '@/lib/supabase';
-import { useAuth } from '@/contexts/AuthContext';
-import { getApiKey } from '@/lib/aiConfig';
-import { GoogleGenerativeAI } from '@google/generative-ai';
-import { Button } from '@/components/ui/button';
-import { Textarea } from '@/components/ui/textarea';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { useToast } from '@/hooks/use-toast';
-import { Copy } from 'lucide-react';
+import { useState, useEffect } from "react"
+import { useNavigate, useParams, Link } from "react-router-dom"
+import { supabase } from "@/lib/supabase"
+import { useAuth } from "@/contexts/AuthContext"
+import { getApiKey } from "@/lib/aiConfig"
+import { GoogleGenerativeAI } from "@google/generative-ai"
+import { Button } from "@/components/ui/button"
+import { Textarea } from "@/components/ui/textarea"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { useToast } from "@/hooks/use-toast"
+import {
+  ArrowLeft,
+  Sparkles,
+  Copy,
+  Check,
+  Save,
+  AlertCircle,
+  BookOpen,
+  ExternalLink,
+  Loader2,
+  History,
+  FileText,
+} from "lucide-react"
 
 export default function NewCPPT() {
-  const { id: patient_id } = useParams<{ id: string }>();
-  const navigate = useNavigate();
-  const { session } = useAuth();
-  const { toast } = useToast();
+  const { id: patient_id } = useParams<{ id: string }>()
+  const navigate = useNavigate()
+  const { session } = useAuth()
+  const { toast } = useToast()
 
   const getLocalDate = () => {
-    const d = new Date();
-    return new Date(d.getTime() - (d.getTimezoneOffset() * 60000)).toISOString().split('T')[0];
-  };
+    const d = new Date()
+    return new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString().split("T")[0]
+  }
 
-  const handleCopy = (text: string, fieldName: string) => {
-    if (!text) return;
-    navigator.clipboard.writeText(text);
-    toast({
-      title: "Tersalin",
-      description: `${fieldName} berhasil disalin ke clipboard.`,
-    });
-  };
-
-  const [tanggal, setTanggal] = useState(getLocalDate());
-  const [subjective, setSubjective] = useState('');
-  const [objective, setObjective] = useState('');
-  const [assessment, setAssessment] = useState('');
-  const [plan, setPlan] = useState('');
-  const [references, setReferences] = useState<{title: string, url: string}[] | null>(null);
+  const [tanggal, setTanggal] = useState(getLocalDate())
+  const [subjective, setSubjective] = useState("")
+  const [objective, setObjective] = useState("")
+  const [assessment, setAssessment] = useState("")
+  const [plan, setPlan] = useState("")
+  const [references, setReferences] = useState<{ title: string; url: string }[] | null>(null)
   
-  const [loadingAI, setLoadingAI] = useState(false);
-  const [saving, setSaving] = useState(false);
-  const [errorMsg, setErrorMsg] = useState('');
+  const [patientName, setPatientName] = useState("")
+  const [patientRm, setPatientRm] = useState("")
+  const [loadingAI, setLoadingAI] = useState(false)
+  const [saving, setSaving] = useState(false)
+  const [errorMsg, setErrorMsg] = useState("")
+  const [copiedField, setCopiedField] = useState<string | null>(null)
   
-  const [previousRecord, setPreviousRecord] = useState<any>(null);
+  const [previousRecord, setPreviousRecord] = useState<any>(null)
 
   useEffect(() => {
-    const fetchPreviousRecord = async () => {
-      if (!patient_id) return;
+    const fetchPatientAndPreviousRecord = async () => {
+      if (!patient_id) return
       
-      // Fetch patient's admission date
+      // Fetch patient's details
       const { data: patientData } = await supabase
-        .from('patients')
-        .select('admitted_at')
-        .eq('id', patient_id)
-        .single();
+        .from("patients")
+        .select("nama, no_rm, admitted_at")
+        .eq("id", patient_id)
+        .single()
+        
+      if (patientData) {
+        setPatientName(patientData.nama)
+        setPatientRm(patientData.no_rm)
+      }
         
       let query = supabase
-        .from('cppt_records')
-        .select('*')
-        .eq('patient_id', patient_id);
+        .from("cppt_records")
+        .select("*")
+        .eq("patient_id", patient_id)
         
       if (patientData?.admitted_at) {
-        query = query.gte('created_at', patientData.admitted_at);
+        query = query.gte("created_at", patientData.admitted_at)
       }
       
       const { data, error } = await query
-        .order('tanggal', { ascending: false })
-        .order('created_at', { ascending: false })
+        .order("tanggal", { ascending: false })
+        .order("created_at", { ascending: false })
         .limit(1)
-        .single();
+        .single()
         
       if (!error && data) {
-        setPreviousRecord(data);
+        setPreviousRecord(data)
       } else {
-        setPreviousRecord(null);
+        setPreviousRecord(null)
       }
-    };
+    }
     
-    fetchPreviousRecord();
-  }, [patient_id]);
+    fetchPatientAndPreviousRecord()
+  }, [patient_id])
+
+  const handleCopy = (text: string, fieldName: string) => {
+    if (!text) return
+    navigator.clipboard.writeText(text)
+    setCopiedField(fieldName)
+    setTimeout(() => setCopiedField(null), 2000)
+    toast({
+      title: "Tersalin ke Clipboard",
+      description: `Teks ${fieldName} berhasil disalin.`,
+    })
+  }
 
   const generateAI = async () => {
-    setErrorMsg('');
-    const apiKey = getApiKey();
+    setErrorMsg("")
+    const apiKey = getApiKey()
     if (!apiKey) {
-      setErrorMsg('API Key belum diatur. Silakan ke halaman Settings untuk mengatur API Key Gemini.');
-      return;
+      setErrorMsg("API Key Google Gemini belum diatur. Silakan ke menu Pengaturan untuk menyimpan API Key.")
+      return
     }
 
-    if (!subjective || !objective) {
-      setErrorMsg('Isi Subjective dan Objective terlebih dahulu.');
-      return;
+    if (!subjective.trim() || !objective.trim()) {
+      setErrorMsg("Mohon lengkapi bagian Subjektif (S) dan Objektif (O) terlebih dahulu sebelum membuat analisis AI.")
+      return
     }
 
-    setLoadingAI(true);
+    setLoadingAI(true)
     try {
-      const genAI = new GoogleGenerativeAI(apiKey);
+      const genAI = new GoogleGenerativeAI(apiKey)
       const model = genAI.getGenerativeModel({ 
-        model: "gemini-3.6-flash",
+        model: "gemini-2.5-flash",
         tools: [
           {
             googleSearch: {}
-          }
+          } as any
         ],
         generationConfig: {
-          temperature: 0.0, // Memaksa AI memberikan jawaban yang konsisten dan paling logis
+          temperature: 0.0,
         }
-      });
+      })
 
       const globalInstruction = `SANGAT PENTING (ATURAN UMUM):
 1. Di dalam pedoman apoteker klinis, data Objective mencakup "Obat yang sedang digunakan / terapi saat ini". Oleh karena itu, jika Anda melihat daftar obat di data Objective, evaluasilah obat tersebut sebagai TERAPI SAAT INI yang diberikan oleh dokter. Jangan otomatis menyimpulkan bahwa terapi tersebut "telah gagal" (misalnya: "TD masih tinggi padahal sudah minum obat X"), melainkan evaluasilah apakah pemilihan obat tersebut (terapi saat ini) sudah TEPAT untuk kondisi pasien saat ini.
@@ -115,7 +138,7 @@ export default function NewCPPT() {
 3. ETIKA INTERVENSI: Jika Anda merekomendasikan penambahan terapi baru pada bagian Plan, sebutkan NAMA GOLONGAN OBATNYA SAJA (misalnya: "Analgetik" atau "Obat penurun lipid golongan Fibrat"). DILARANG KERAS meresepkan nama obat spesifik beserta dosisnya (misalnya: "Parasetamol 500mg" atau "Simvastatin 20mg") untuk menghormati kewenangan klinis dokter.
 4. GAYA BAHASA (NADA BICARA): Pada bagian Plan, gunakan bahasa yang sangat sopan, kolaboratif, dan bersifat menyarankan. JANGAN menggurui atau mendikte dokter. Gunakan frasa penawaran seperti "Mengusulkan untuk mempertimbangkan...", "Dapat didiskusikan kemungkinan...", atau "Mohon pertimbangkan penambahan..." alih-alih kalimat perintah seperti "Harus diberikan..." atau "Wajib diganti...".
 5. Pada bagian Assessment (Masalah/Penyebab), Anda BOLEH memberikan lebih dari 1 poin PCNE jika memang ditemukan indikasi multipel.
-6. Pada bagian Plan (Intervensi), Anda WAJIB menggunakan format kode poin PCNE Intervensi yang bersesuaian.`;
+6. Pada bagian Plan (Intervensi), Anda WAJIB menggunakan format kode poin PCNE Intervensi yang bersesuaian.`
 
       const contextInstruction = previousRecord
         ? `KONTEKS PASIEN (PERAWATAN LANJUTAN / HARI KE-N):
@@ -130,7 +153,7 @@ A: ${previousRecord.assessment}
 P: ${previousRecord.plan}`
         : `KONTEKS PASIEN (PERAWATAN HARI PERTAMA):
 - Ini adalah hari pertama CPPT pasien. Obat-obatan yang dicantumkan pada bagian Objective adalah TERAPI YANG BARU DIRESEPKAN HARI INI OLEH DOKTER.
-- Tugas Anda adalah mengevaluasi ketepatan resep baru tersebut terhadap kondisi pasien (Subjective/Objective) menggunakan PCNE. JANGAN menganggap obat tersebut sebagai riwayat pengobatan yang sudah gagal.`;
+- Tugas Anda adalah mengevaluasi ketepatan resep baru tersebut terhadap kondisi pasien (Subjective/Objective) menggunakan PCNE. JANGAN menganggap obat tersebut sebagai riwayat pengobatan yang sudah gagal.`
 
       const prompt = `Anda adalah asisten apoteker klinis. Diberikan data Subjective dan Objective pasien, buatlah Assessment dan Plan menggunakan klasifikasi metode PCNE (Pharmaceutical Care Network Europe).
 
@@ -160,12 +183,11 @@ Kembalikan respon HANYA dalam bentuk JSON murni tanpa awalan/akhiran markdown bl
 }
 
 Instruksi Referensi (WAJIB DIIKUTI):
-- Anda WAJIB memberikan referensi yang relevan untuk **SETIAP** masalah klinis spesifik atau intervensi kritis yang Anda angkat (Misalnya: Jika Anda membahas masalah Lisinopril DAN kontraindikasi Etoricoxib, Anda harus mencantumkan minimal 2 referensi yang mewakili kedua topik tersebut).
-- OPTIMASI WAKTU TUNGGU (LATENCY): JANGAN gunakan fitur Google Search jika Anda sudah mengetahui nomor DOI jurnal tersebut secara pasti (langsung berikan format \`https://doi.org/[DOI]\`). 
+- Anda WAJIB memberikan referensi yang relevan untuk **SETIAP** masalah klinis spesifik atau intervensi kritis yang Anda angkat.
+- OPTIMASI WAKTU TUNGGU: JANGAN gunakan fitur Google Search jika Anda sudah mengetahui nomor DOI jurnal tersebut secara pasti (langsung berikan format \`https://doi.org/[DOI]\`). 
 - KARENA FITUR GOOGLE SEARCH ANDA AKTIF, HANYA lakukan pencarian web JIKA Anda merujuk pada artikel/pedoman/website obat yang tidak memiliki DOI, guna menemukan URL ASLI (Direct Link) yang 100% aktif dan valid.
-- Referensi harus berkualitas tinggi HANYA dari jenis literatur berikut: Guideline Medis, SRMA, RCT, atau Cohort Study. (DILARANG MENGGUNAKAN SUMBER LAIN SELAIN 4 JENIS INI).
-- Berikan URL LANGSUNG (*direct link*) yang spesifik. JANGAN MENGARANG ATAU BERHALUSINASI URL. Jika ragu, selalu gunakan DOI.
-- Jika merujuk ke obat, gunakan link spesifik halamannya di drugs.com (contoh: \`https://www.drugs.com/monograph/amlodipine.html\`).
+- Referensi harus berkualitas tinggi HANYA dari jenis literatur berikut: Guideline Medis, SRMA, RCT, atau Cohort Study.
+- Berikan URL LANGSUNG (*direct link*) yang spesifik. Jika merujuk ke obat, gunakan link spesifik halamannya di drugs.com.
 - Judul ("title") harus spesifik menyebutkan nama guideline atau topik jurnalnya secara akurat.
 
 REFERENSI KODE PCNE v9.00 (GUNAKAN KODE INI SECARA KETAT, JANGAN MENGARANG):
@@ -244,39 +266,44 @@ I4.2 Efek samping dilaporkan ke pihak berwenang
 Data Pasien:
 Subjective: ${subjective}
 Objective: ${objective}
-`;
+`
 
-      const result = await model.generateContent(prompt);
-      const response = await result.response;
-      const text = response.text();
+      const result = await model.generateContent(prompt)
+      const response = await result.response
+      const text = response.text()
       
-      const cleanText = text.replace(/```json/g, '').replace(/```/g, '').trim();
-      const parsed = JSON.parse(cleanText);
+      const cleanText = text.replace(/```json/g, "").replace(/```/g, "").trim()
+      const parsed = JSON.parse(cleanText)
 
-      setAssessment(parsed.assessment || '');
-      setPlan(parsed.plan || '');
-      setReferences(parsed.references || null);
+      setAssessment(parsed.assessment || "")
+      setPlan(parsed.plan || "")
+      setReferences(parsed.references || null)
       
       toast({
-        title: "AI Generation Berhasil",
-        description: "Assessment dan Plan telah dibuat.",
-      });
+        title: "Analisis PCNE Berhasil Dibuat",
+        description: "Bagian Assessment dan Plan telah diperbarui.",
+      })
     } catch (error) {
-      console.error(error);
-      setErrorMsg(error instanceof Error ? error.message : 'Gagal generate dengan AI.');
+      console.error(error)
+      setErrorMsg(error instanceof Error ? error.message : "Gagal menghasilkan analisis dengan AI. Periksa kembali API Key dan koneksi internet.")
     } finally {
-      setLoadingAI(false);
+      setLoadingAI(false)
     }
-  };
+  }
 
   const handleSave = async () => {
-    if (!patient_id || !session?.user.id) return;
-    setSaving(true);
-    setErrorMsg('');
+    if (!patient_id || !session?.user.id) return
+    if (!subjective.trim() && !objective.trim() && !assessment.trim() && !plan.trim()) {
+      setErrorMsg("Mohon isi setidaknya salah satu kolom SOAP sebelum menyimpan.")
+      return
+    }
+
+    setSaving(true)
+    setErrorMsg("")
 
     try {
       const { error } = await supabase
-        .from('cppt_records')
+        .from("cppt_records")
         .insert({
           patient_id,
           user_id: session.user.id,
@@ -286,150 +313,351 @@ Objective: ${objective}
           assessment,
           plan,
           references
-        });
+        })
 
-      if (error) throw error;
+      if (error) throw error
 
       toast({
-        title: "Berhasil",
-        description: "Data CPPT berhasil disimpan.",
-      });
-      navigate(`/patients/${patient_id}`);
+        title: "CPPT Berhasil Disimpan",
+        description: "Catatan perkembangan pasien telah ditambahkan ke rekam medis.",
+      })
+      navigate(`/patients/${patient_id}`)
     } catch (error) {
-      console.error(error);
-      setErrorMsg(error instanceof Error ? error.message : 'Gagal menyimpan CPPT.');
+      console.error(error)
+      setErrorMsg(error instanceof Error ? error.message : "Gagal menyimpan data CPPT.")
     } finally {
-      setSaving(false);
+      setSaving(false)
     }
-  };
+  }
 
   return (
-    <div className="max-w-4xl mx-auto p-6 space-y-6">
-      <div className="flex justify-between items-center">
-        <h1 className="text-2xl font-bold">Buat CPPT Baru</h1>
-        <Button variant="outline" onClick={() => navigate(`/patients/${patient_id}`)}>
-          Kembali
-        </Button>
+    <div className="w-full py-6 sm:py-8 px-4 sm:px-6 lg:px-8 space-y-6">
+      {/* Header Bar */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2 border-b border-border/70">
+        <div className="flex items-center gap-3">
+          <Button variant="ghost" size="icon" asChild className="shrink-0 text-muted-foreground hover:text-foreground">
+            <Link to={`/patients/${patient_id}`} aria-label="Kembali ke detail pasien">
+              <ArrowLeft className="w-5 h-5" />
+            </Link>
+          </Button>
+          <div>
+            <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-foreground">
+              Pembuatan Catatan CPPT Baru
+            </h1>
+            <p className="text-xs sm:text-sm text-muted-foreground">
+              Pasien: <strong className="text-foreground">{patientName || "Memuat..."}</strong> (No. RM: <span className="font-mono">{patientRm}</span>)
+            </p>
+          </div>
+        </div>
+
+        <div className="flex items-center gap-2 self-end sm:self-auto">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => navigate(`/patients/${patient_id}`)}
+            disabled={saving}
+          >
+            Batal
+          </Button>
+          <Button
+            size="sm"
+            onClick={handleSave}
+            disabled={saving}
+            className="shadow-sm font-semibold"
+          >
+            {saving ? (
+              <>
+                <Loader2 className="w-4 h-4 mr-1.5 animate-spin" />
+                <span>Menyimpan...</span>
+              </>
+            ) : (
+              <>
+                <Save className="w-4 h-4 mr-1.5" />
+                <span>Simpan Catatan CPPT</span>
+              </>
+            )}
+          </Button>
+        </div>
       </div>
 
+      {/* Error Alert */}
       {errorMsg && (
         <Alert variant="destructive">
-          <AlertTitle>Error</AlertTitle>
+          <AlertCircle className="h-4 w-4" />
+          <AlertTitle>Perhatian</AlertTitle>
           <AlertDescription>{errorMsg}</AlertDescription>
         </Alert>
       )}
 
-      <div className="space-y-4 bg-card text-card-foreground p-6 rounded-lg border shadow-sm">
-        <div className="space-y-2">
-          <Label htmlFor="tanggal">Tanggal</Label>
-          <Input 
-            id="tanggal" 
-            type="date" 
-            value={tanggal} 
-            onChange={(e) => setTanggal(e.target.value)} 
-          />
+      {/* Context Information Pill */}
+      <div className="flex items-center gap-3 p-3.5 rounded-xl border border-primary/20 bg-primary/5 text-xs text-foreground/90">
+        <div className="h-7 w-7 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0">
+          <History className="h-4 w-4" />
+        </div>
+        <div>
+          <span className="font-bold text-foreground">
+            {previousRecord ? "Mode Kunjungan Lanjutan (Follow-up Care)" : "Mode Pasien Baru (Day-1 Admission)"}:
+          </span>{" "}
+          {previousRecord
+            ? "Data CPPT sebelumnya otomatis digunakan AI sebagai riwayat untuk mengevaluasi resep & terapi hari ini."
+            : "Ini adalah rekam CPPT pertama pasien. Obat pada kolom Objektif akan dievaluasi sebagai terapi awal."}
+        </div>
+      </div>
+
+      {/* 2-Column Clinical Studio Layout */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+        {/* Left Column: S & O Form + AI Trigger */}
+        <div className="lg:col-span-6 space-y-5">
+          <Card className="border-border/80 shadow-subtle">
+            <CardHeader className="pb-3 border-b border-border/50 bg-muted/20">
+              <div className="flex items-center justify-between">
+                <CardTitle className="text-base flex items-center gap-2">
+                  <FileText className="w-4 h-4 text-primary" />
+                  <span>Data Klinis Pasien</span>
+                </CardTitle>
+                <div className="flex items-center gap-2">
+                  <Label htmlFor="tanggal" className="text-xs text-muted-foreground">
+                    Tanggal:
+                  </Label>
+                  <Input
+                    id="tanggal"
+                    type="date"
+                    value={tanggal}
+                    onChange={(e) => setTanggal(e.target.value)}
+                    className="h-8 text-xs w-36 tabular-nums"
+                  />
+                </div>
+              </div>
+            </CardHeader>
+
+            <CardContent className="p-5 space-y-4">
+              {/* Subjective (S) */}
+              <div className="space-y-1.5">
+                <div className="flex justify-between items-center">
+                  <div className="flex items-center gap-2">
+                    <span className="inline-flex items-center justify-center h-5 w-5 rounded-md bg-sky-500 text-white font-bold text-xs">
+                      S
+                    </span>
+                    <Label htmlFor="subjective" className="text-xs font-semibold uppercase tracking-wider text-sky-900 dark:text-sky-300">
+                      Subjektif (Keluhan Pasien)
+                    </Label>
+                  </div>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    className="h-7 px-2 text-xs text-muted-foreground hover:text-foreground"
+                    onClick={() => handleCopy(subjective, "Subjektif")}
+                    aria-label="Salin Subjektif"
+                  >
+                    {copiedField === "Subjektif" ? (
+                      <Check className="w-3.5 h-3.5 text-emerald-600 mr-1" />
+                    ) : (
+                      <Copy className="w-3.5 h-3.5 mr-1" />
+                    )}
+                    <span>{copiedField === "Subjektif" ? "Tersalin" : "Salin"}</span>
+                  </Button>
+                </div>
+                <Textarea
+                  id="subjective"
+                  rows={4}
+                  placeholder="Contoh: Pasien mengeluh pusing berputar sejak kemarin malam, mual (+), muntah 1x..."
+                  value={subjective}
+                  onChange={(e) => setSubjective(e.target.value)}
+                  className="bg-card border-sky-200/80 dark:border-sky-900/60 focus-visible:border-sky-500 focus-visible:ring-sky-500/20"
+                />
+              </div>
+
+              {/* Objective (O) */}
+              <div className="space-y-1.5">
+                <div className="flex justify-between items-center">
+                  <div className="flex items-center gap-2">
+                    <span className="inline-flex items-center justify-center h-5 w-5 rounded-md bg-emerald-600 text-white font-bold text-xs">
+                      O
+                    </span>
+                    <Label htmlFor="objective" className="text-xs font-semibold uppercase tracking-wider text-emerald-900 dark:text-emerald-300">
+                      Objektif (Lab & Terapi Obat Saat Ini)
+                    </Label>
+                  </div>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    className="h-7 px-2 text-xs text-muted-foreground hover:text-foreground"
+                    onClick={() => handleCopy(objective, "Objektif")}
+                    aria-label="Salin Objektif"
+                  >
+                    {copiedField === "Objektif" ? (
+                      <Check className="w-3.5 h-3.5 text-emerald-600 mr-1" />
+                    ) : (
+                      <Copy className="w-3.5 h-3.5 mr-1" />
+                    )}
+                    <span>{copiedField === "Objektif" ? "Tersalin" : "Salin"}</span>
+                  </Button>
+                </div>
+                <Textarea
+                  id="objective"
+                  rows={6}
+                  placeholder="Contoh:
+TD: 150/90 mmHg, HR: 88x/m, GDS: 180 mg/dL.
+Obat saat ini:
+- Amlodipine 10mg 1x1 tab
+- Metformin 500mg 2x1 tab
+- Ketorolac inj 30mg / 8 jam"
+                  value={objective}
+                  onChange={(e) => setObjective(e.target.value)}
+                  className="bg-card border-emerald-200/80 dark:border-emerald-900/60 focus-visible:border-emerald-600 focus-visible:ring-emerald-600/20"
+                />
+                <p className="text-[11px] text-muted-foreground italic">
+                  * Sertakan tanda vital, hasil lab relevan, dan daftar obat yang sedang dikonsumsi/diresepkan dokter.
+                </p>
+              </div>
+
+              {/* AI Trigger Button */}
+              <div className="pt-2">
+                <Button
+                  type="button"
+                  onClick={generateAI}
+                  disabled={loadingAI}
+                  className="w-full h-11 bg-gradient-to-r from-primary to-sky-600 hover:from-primary/90 hover:to-sky-600/90 text-primary-foreground font-semibold shadow-md shadow-primary/20"
+                >
+                  {loadingAI ? (
+                    <>
+                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                      <span>Menganalisis DRP & Panduan PCNE...</span>
+                    </>
+                  ) : (
+                    <>
+                      <Sparkles className="w-4 h-4 mr-2" />
+                      <span>✨ Generate Assessment & Plan dengan AI</span>
+                    </>
+                  )}
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
         </div>
 
-        <div className="space-y-2">
-          <div className="flex justify-between items-center">
-            <Label htmlFor="subjective">Subjective (S)</Label>
-            <Button type="button" variant="ghost" size="sm" className="h-6 px-2" onClick={() => handleCopy(subjective, "Subjective")}>
-              <Copy className="w-3 h-3 mr-1" /> Salin
-            </Button>
-          </div>
-          <Textarea 
-            id="subjective" 
-            rows={4}
-            placeholder="Keluhan pasien..."
-            value={subjective} 
-            onChange={(e) => setSubjective(e.target.value)} 
-          />
-        </div>
+        {/* Right Column: Assessment & Plan Editors + References */}
+        <div className="lg:col-span-6 space-y-5">
+          <Card className="border-border/80 shadow-subtle">
+            <CardHeader className="pb-3 border-b border-border/50 bg-muted/20">
+              <CardTitle className="text-base flex items-center gap-2">
+                <Sparkles className="w-4 h-4 text-primary" />
+                <span>Rekomendasi Farmasi Klinis (PCNE v9.00)</span>
+              </CardTitle>
+            </CardHeader>
 
-        <div className="space-y-2">
-          <div className="flex justify-between items-center">
-            <Label htmlFor="objective">Objective (O)</Label>
-            <Button type="button" variant="ghost" size="sm" className="h-6 px-2" onClick={() => handleCopy(objective, "Objective")}>
-              <Copy className="w-3 h-3 mr-1" /> Salin
-            </Button>
-          </div>
-          <Textarea 
-            id="objective" 
-            rows={4}
-            placeholder="Hasil pemeriksaan, lab, dll..."
-            value={objective} 
-            onChange={(e) => setObjective(e.target.value)} 
-          />
-        </div>
+            <CardContent className="p-5 space-y-4">
+              {/* Assessment (A) */}
+              <div className="space-y-1.5">
+                <div className="flex justify-between items-center">
+                  <div className="flex items-center gap-2">
+                    <span className="inline-flex items-center justify-center h-5 w-5 rounded-md bg-violet-600 text-white font-bold text-xs">
+                      A
+                    </span>
+                    <Label htmlFor="assessment" className="text-xs font-semibold uppercase tracking-wider text-violet-900 dark:text-violet-300">
+                      Assessment (Problem & Cause PCNE)
+                    </Label>
+                  </div>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    className="h-7 px-2 text-xs text-muted-foreground hover:text-foreground"
+                    onClick={() => handleCopy(assessment, "Assessment")}
+                    aria-label="Salin Assessment"
+                  >
+                    {copiedField === "Assessment" ? (
+                      <Check className="w-3.5 h-3.5 text-emerald-600 mr-1" />
+                    ) : (
+                      <Copy className="w-3.5 h-3.5 mr-1" />
+                    )}
+                    <span>{copiedField === "Assessment" ? "Tersalin" : "Salin"}</span>
+                  </Button>
+                </div>
+                <Textarea
+                  id="assessment"
+                  rows={5}
+                  placeholder="Hasil analisis masalah terapi obat (DRP) akan muncul di sini dan dapat Anda sesuaikan..."
+                  value={assessment}
+                  onChange={(e) => setAssessment(e.target.value)}
+                  className="bg-card border-violet-200/80 dark:border-violet-900/60 focus-visible:border-violet-600 focus-visible:ring-violet-600/20 leading-relaxed"
+                />
+              </div>
 
-        <Button onClick={generateAI} disabled={loadingAI} className="w-full">
-          {loadingAI ? 'Menghasilkan...' : '✨ Generate Assessment & Plan dengan AI'}
-        </Button>
+              {/* Plan (P) */}
+              <div className="space-y-1.5">
+                <div className="flex justify-between items-center">
+                  <div className="flex items-center gap-2">
+                    <span className="inline-flex items-center justify-center h-5 w-5 rounded-md bg-indigo-600 text-white font-bold text-xs">
+                      P
+                    </span>
+                    <Label htmlFor="plan" className="text-xs font-semibold uppercase tracking-wider text-indigo-900 dark:text-indigo-300">
+                      Plan (Intervensi & Rekomendasi Apoteker)
+                    </Label>
+                  </div>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    className="h-7 px-2 text-xs text-muted-foreground hover:text-foreground"
+                    onClick={() => handleCopy(plan, "Plan")}
+                    aria-label="Salin Plan"
+                  >
+                    {copiedField === "Plan" ? (
+                      <Check className="w-3.5 h-3.5 text-emerald-600 mr-1" />
+                    ) : (
+                      <Copy className="w-3.5 h-3.5 mr-1" />
+                    )}
+                    <span>{copiedField === "Plan" ? "Tersalin" : "Salin"}</span>
+                  </Button>
+                </div>
+                <Textarea
+                  id="plan"
+                  rows={5}
+                  placeholder="Saran intervensi klinis kepada dokter atau konseling pasien akan muncul di sini..."
+                  value={plan}
+                  onChange={(e) => setPlan(e.target.value)}
+                  className="bg-card border-indigo-200/80 dark:border-indigo-900/60 focus-visible:border-indigo-600 focus-visible:ring-indigo-600/20 leading-relaxed"
+                />
+              </div>
 
-        <div className="space-y-2">
-          <div className="flex justify-between items-center">
-            <Label htmlFor="assessment">Assessment (A)</Label>
-            <Button type="button" variant="ghost" size="sm" className="h-6 px-2" onClick={() => handleCopy(assessment, "Assessment")}>
-              <Copy className="w-3 h-3 mr-1" /> Salin
-            </Button>
-          </div>
-          <Textarea 
-            id="assessment" 
-            rows={4}
-            placeholder="Assessment (Bisa diedit)..."
-            value={assessment} 
-            onChange={(e) => setAssessment(e.target.value)} 
-          />
-        </div>
-
-        <div className="space-y-2">
-          <div className="flex justify-between items-center">
-            <Label htmlFor="plan">Plan (P)</Label>
-            <Button type="button" variant="ghost" size="sm" className="h-6 px-2" onClick={() => handleCopy(plan, "Plan")}>
-              <Copy className="w-3 h-3 mr-1" /> Salin
-            </Button>
-          </div>
-          <Textarea 
-            id="plan" 
-            rows={4}
-            placeholder="Plan (Bisa diedit)..."
-            value={plan} 
-            onChange={(e) => setPlan(e.target.value)} 
-          />
-        </div>
-
-        {references && references.length > 0 && (
-          <div className="space-y-2 pt-4 border-t">
-            <Label className="text-primary text-base">Referensi Ilmiah</Label>
-            <div className="bg-slate-50 dark:bg-slate-900 p-4 rounded-md border">
-              <ul className="space-y-2">
-                {references.map((ref, idx) => (
-                  <li key={idx}>
-                    <a 
-                      href={ref.url} 
-                      target="_blank" 
-                      rel="noopener noreferrer"
-                      className="text-sm text-blue-600 hover:underline flex items-start gap-2"
-                    >
-                      <span className="text-xs bg-blue-100 text-blue-800 px-1.5 py-0.5 rounded shrink-0 mt-0.5">Link</span>
-                      {ref.title}
-                    </a>
-                  </li>
-                ))}
-              </ul>
-              <p className="text-xs text-muted-foreground mt-3 italic">
-                * Referensi disuplai oleh AI untuk memvalidasi saran intervensi. Data ini bersifat statis dan akan disimpan secara otomatis.
-              </p>
-            </div>
-          </div>
-        )}
-
-        <div className="pt-4">
-          <Button onClick={handleSave} disabled={saving} className="w-full" size="lg">
-            {saving ? 'Menyimpan...' : 'Simpan CPPT'}
-          </Button>
+              {/* References Preview Card */}
+              {references && references.length > 0 && (
+                <div className="mt-4 pt-4 border-t border-border/70 space-y-2">
+                  <div className="flex items-center gap-2">
+                    <BookOpen className="w-4 h-4 text-primary" />
+                    <Label className="text-xs font-semibold uppercase tracking-wider text-primary">
+                      Referensi Literatur Klinis Terlampir
+                    </Label>
+                  </div>
+                  <div className="space-y-2">
+                    {references.map((ref, idx) => (
+                      <a
+                        key={idx}
+                        href={ref.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="group flex items-start justify-between gap-2.5 p-2.5 rounded-lg border border-border/60 bg-muted/40 hover:bg-muted/80 hover:border-primary/40 transition-all text-xs"
+                      >
+                        <span className="font-medium text-foreground/90 group-hover:text-primary transition-colors leading-relaxed">
+                          {ref.title}
+                        </span>
+                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-medium bg-primary/10 text-primary shrink-0">
+                          <span>Buka</span>
+                          <ExternalLink className="w-3 h-3" />
+                        </span>
+                      </a>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </CardContent>
+          </Card>
         </div>
       </div>
     </div>
-  );
+  )
 }
+

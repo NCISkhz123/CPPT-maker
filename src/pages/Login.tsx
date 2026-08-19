@@ -59,9 +59,7 @@ export default function Login() {
           <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-foreground">
             CPPT Maker
           </h1>
-          <p className="text-sm text-muted-foreground max-w-xs">
-            Sistem Catatan Perkembangan Pasien Terintegrasi & Asuhan Kefarmasian PCNE
-          </p>
+
         </div>
 
         {/* Auth Card */}
@@ -194,10 +192,7 @@ export default function Login() {
           </CardContent>
         </Card>
 
-        {/* Footer Note */}
-        <p className="text-center text-xs text-muted-foreground">
-          Aplikasi Asuhan Kefarmasian & Evaluasi Masalah Terapi Obat
-        </p>
+
       </div>
     </div>
   )
